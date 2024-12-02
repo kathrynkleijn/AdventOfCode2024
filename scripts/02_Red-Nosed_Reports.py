@@ -86,16 +86,35 @@ def check_safe_with_dampener(report):
         else:
             return 0
     elif (sorted(report) != report) and (sorted(report, reverse=True) != report):
-        if report[1] - report[0] > 0:
+        report_copy = report.copy()
+        report_copy.pop(0)
+        if check_safe(report_copy) == 1:
+            return 1
+        elif report[1] - report[0] > 0:
             for i in range(1, len(report) - 1):
                 if report[i + 1] - report[i] < 0:
-                    report.remove(report[i])
-                    return check_safe(report)
+                    report_copy = report.copy()
+                    report_copy.pop(i)
+                    check1 = check_safe(report_copy)
+                    report.pop((i + 1))
+                    check2 = check_safe(report)
+                    if check1 == 1 or check2 == 1:
+                        return 1
+                    else:
+                        return 0
+
         else:
             for i in range(1, len(report) - 1):
                 if report[i + 1] - report[i] > 0:
-                    report.remove(report[i])
-                    return check_safe(report)
+                    report_copy = report.copy()
+                    report_copy.pop(i)
+                    check1 = check_safe(report_copy)
+                    report.pop((i + 1))
+                    check2 = check_safe(report)
+                    if check1 == 1 or check2 == 1:
+                        return 1
+                    else:
+                        return 0
     else:
         if abs(int(report[1]) - int(report[0])) > 3:
             report = report[1:]
@@ -110,16 +129,6 @@ def check_safe_with_dampener(report):
         return 1
 
 
-def apply_problem_dampener(report_list):
-    safe_total = 0
-    for report in report_list:
-        report = list(map(int, report.split()))
-        safe_total += check_safe_with_dampener(report)
-    return safe_total
-
-
-assert apply_problem_dampener(test_data) == test_answer2
-
 assert check_safe_with_dampener([5, 5, 8, 5, 2]) == 0
 assert check_safe_with_dampener([51, 52, 55, 58, 60, 61, 62, 61]) == 1
 assert check_safe_with_dampener([71, 68, 71, 78, 79, 78]) == 0
@@ -130,6 +139,18 @@ assert check_safe_with_dampener([7, 8, 9, 10, 15]) == 1
 assert check_safe_with_dampener([10, 9, 8, 7, 1]) == 1
 assert check_safe_with_dampener([15, 10, 9, 8, 7]) == 1
 assert check_safe_with_dampener([20, 23, 22, 19, 17, 15]) == 1
+assert check_safe_with_dampener([21, 22, 25, 28, 31, 29, 34]) == 1
+
+
+def apply_problem_dampener(report_list):
+    safe_total = 0
+    for report in report_list:
+        report = list(map(int, report.split()))
+        safe_total += check_safe_with_dampener(report)
+    return safe_total
+
+
+assert apply_problem_dampener(test_data) == test_answer2
 
 
 answer_2 = apply_problem_dampener(input)
