@@ -129,7 +129,27 @@ assert check_safe_with_dampener([1, 7, 8, 9, 10]) == 1
 assert check_safe_with_dampener([7, 8, 9, 10, 15]) == 1
 assert check_safe_with_dampener([10, 9, 8, 7, 1]) == 1
 assert check_safe_with_dampener([15, 10, 9, 8, 7]) == 1
+assert check_safe_with_dampener([20, 23, 22, 19, 17, 15]) == 1
 
 
 answer_2 = apply_problem_dampener(input)
 print(answer_2)
+
+
+# brute force
+def brute_force(report_list):
+    safe_total = 0
+    for report in report_list:
+        report = list(map(int, report.split()))
+        rep_check = 0
+        for i in range(len(report)):
+            new = report.copy()
+            new.pop(i)
+            rep_check += check_safe(new)
+        if rep_check > 0:
+            safe_total += 1
+    return safe_total
+
+
+answer = brute_force(input)
+print(answer)
