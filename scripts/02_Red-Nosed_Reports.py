@@ -1,5 +1,7 @@
 # Day 2 - Red-Nosed Reports
 
+import collections
+
 test_data = """7 6 4 2 1
 1 2 7 8 9
 9 7 6 2 1
@@ -54,37 +56,36 @@ print(answer_1)
 test_answer2 = 4
 
 
+def duplicates_check(report):
+    dups = collections.defaultdict(list)
+    for i, e in enumerate(report):
+        dups[e].append(i)
+    for v in dups.values():
+        if len(v) >= 2:
+            return v
+
+
 def check_safe_with_dampener(report):
     if len(set(report)) != len(report):
-        return 0.1
-    elif (sorted(report) != report) and (sorted(report, reverse=True) != report):
-        return 0.2
-    else:
-        for i in range(len(report) - 1):
-            if abs(int(report[i + 1]) - int(report[i])) > 3:
-                return 0.3
-        return 1
-
-
-def apply_problem_dampener(report_list):
-    safe_total = 0
-    for report in report_list:
-        report = list(map(int, report.split()))
-        category = check_safe_with_dampener(report)
-        if category == 1:
-            safe_total += 1
-        else:
-            safe_total += problem_dampener(report, category)
-    return safe_total
-
-
-def problem_dampener(report, category):
-    if category == 0.1:
-        for i in range(len(report) - 1):
-            if report[i + 1] == report[i]:
-                report.remove(report[i])
+        if len(set(report)) == len(report) - 1:
+            duplicate_indices = duplicates_check(report)
+            if duplicate_indices[1] - duplicate_indices[0] == 1:
+                report.pop(duplicate_indices[0])
                 return check_safe(report)
-    elif category == 0.2:
+            else:
+                rep1 = report.copy()
+                rep1.pop(duplicate_indices[0])
+                drop_first = check_safe(rep1)
+                rep2 = report.copy()
+                rep2.pop(duplicate_indices[1])
+                drop_second = check_safe(rep2)
+                if drop_first == 1 or drop_second == 1:
+                    return 1
+                else:
+                    return 0
+        else:
+            return 0
+    elif (sorted(report) != report) and (sorted(report, reverse=True) != report):
         if report[1] - report[0] > 0:
             for i in range(1, len(report) - 1):
                 if report[i + 1] - report[i] < 0:
@@ -93,10 +94,42 @@ def problem_dampener(report, category):
         else:
             for i in range(1, len(report) - 1):
                 if report[i + 1] - report[i] > 0:
-                    report = report.remove(report[i])
+                    report.remove(report[i])
                     return check_safe(report)
     else:
-        return 0
+        if abs(int(report[1]) - int(report[0])) > 3:
+            report = report[1:]
+            return check_safe(report)
+        elif abs(int(report[-1]) - int(report[-2])) > 3:
+            report = report[:-1]
+            return check_safe(report)
+        else:
+            for i in range(len(report) - 1):
+                if abs(int(report[i + 1]) - int(report[i])) > 3:
+                    return 0
+        return 1
+
+
+def apply_problem_dampener(report_list):
+    safe_total = 0
+    for report in report_list:
+        report = list(map(int, report.split()))
+        safe_total += check_safe_with_dampener(report)
+    return safe_total
 
 
 assert apply_problem_dampener(test_data) == test_answer2
+
+assert check_safe_with_dampener([5, 5, 8, 5, 2]) == 0
+assert check_safe_with_dampener([51, 52, 55, 58, 60, 61, 62, 61]) == 1
+assert check_safe_with_dampener([71, 68, 71, 78, 79, 78]) == 0
+assert check_safe_with_dampener([1, 1, 2, 8, 9, 12, 10]) == 0
+assert check_safe_with_dampener([1, 6, 3, 4, 7]) == 1
+assert check_safe_with_dampener([1, 7, 8, 9, 10]) == 1
+assert check_safe_with_dampener([7, 8, 9, 10, 15]) == 1
+assert check_safe_with_dampener([10, 9, 8, 7, 1]) == 1
+assert check_safe_with_dampener([15, 10, 9, 8, 7]) == 1
+
+
+answer_2 = apply_problem_dampener(input)
+print(answer_2)
