@@ -155,4 +155,11 @@ if __name__ == "__main__":
     assert search2.find_word("XMAS") == test_answer
 
     search3 = WordSearch(test_data3)
-    assert search3.find_word("XMAS", debug=True) == test_answer
+    assert search3.find_word("XMAS") == test_answer
+
+    with open("../input_data/04_Ceres_Search.txt", "r", encoding="utf-8") as file:
+        input = file.read().strip()
+
+    answer_search = WordSearch(input)
+    answer1 = answer_search.find_word("XMAS")
+    print(answer1)
