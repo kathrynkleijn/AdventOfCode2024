@@ -32,6 +32,19 @@ S.S.S.S.SS
 
 test_answer = 18
 
+test_data4 = """.M.S......
+..A..MSMS.
+.M.S.MAA..
+..A.ASMSM.
+.M.S.M....
+..........
+S.S.S.S.S.
+.A.A.A.A..
+M.M.M.M.M.
+.........."""
+
+test_answer2 = 9
+
 
 class WordSearch:
 
@@ -39,7 +52,9 @@ class WordSearch:
         self.grid = grid
         self.rows = grid.split("\n")
         self.columns = self.to_columns()
-        self.size = (len(self.rows), len(self.columns))
+        self.m = len(self.rows)
+        self.n = len(self.columns)
+        self.size = (self.m, self.n)
         self.diagonalsLR = self.to_diagonalsLR()
         self.diagonalsRL = self.to_diagonalsRL()
 
@@ -52,32 +67,32 @@ class WordSearch:
     def to_diagonalsLR(self):
         self.diagonals = []
         row = 0
-        if self.size[0] == self.size[1]:
-            for j in range(len(self.columns)):
+        if self.m == self.n:
+            for j in range(self.n):
                 diagonal = ""
-                for i in range(row, len(self.rows) - j):
+                for i in range(row, self.m - j):
                     diagonal += self.rows[i][i + j]
                 self.diagonals.append(diagonal)
-            for row in range(1, len(self.columns)):
+            for row in range(1, self.n):
                 diagonal = ""
-                for j in range(len(self.rows) - row):
+                for j in range(self.m - row):
                     diagonal += self.rows[row + j][j]
                 self.diagonals.append(diagonal)
 
         else:
             j = 0
             diagonal = ""
-            for i in range(row, len(self.rows) - j):
+            for i in range(row, self.m - j):
                 diagonal += self.rows[i][i + j]
             self.diagonals.append(diagonal)
-            for j in range(1, len(self.columns)):
+            for j in range(1, self.n):
                 diagonal = ""
-                for i in range(row, len(self.rows) - j + 1):
+                for i in range(row, self.m - j + 1):
                     diagonal += self.rows[i][i + j]
                 self.diagonals.append(diagonal)
-            for row in range(1, len(self.columns) - 1):
+            for row in range(1, self.n - 1):
                 diagonal = ""
-                for j in range(len(self.rows) - row):
+                for j in range(self.m - row):
                     diagonal += self.rows[row + j][j]
                 self.diagonals.append(diagonal)
 
@@ -85,30 +100,30 @@ class WordSearch:
 
     def to_diagonalsRL(self):
         self.diagonals = []
-        row = self.size[0] - 1
-        if self.size[0] == self.size[1]:
-            for j in range(len(self.columns)):
+        row = self.m - 1
+        if self.m == self.n:
+            for j in range(self.n):
                 diagonal = ""
-                for i in range(len(self.rows) - j):
+                for i in range(self.m - j):
                     if row - i < 0:
                         continue
                     diagonal += self.rows[row - i][i + j]
                 self.diagonals.append(diagonal)
-            for row in reversed(range(len(self.columns) - 1)):
+            for row in reversed(range(self.n - 1)):
                 diagonal = ""
                 for j in range(row + 1):
                     diagonal += self.rows[row - j][j]
                 self.diagonals.append(diagonal)
 
         else:
-            for j in range(len(self.columns)):
+            for j in range(self.n):
                 diagonal = ""
-                for i in range(len(self.rows) - j + 1):
+                for i in range(self.m - j + 1):
                     if row - i < 0:
                         continue
                     diagonal += self.rows[row - i][i + j]
                 self.diagonals.append(diagonal)
-            for row in reversed(range(len(self.columns) - 2)):
+            for row in reversed(range(self.n - 2)):
                 diagonal = ""
                 for j in range(row + 1):
                     diagonal += self.rows[row - j][j]
@@ -137,6 +152,32 @@ class WordSearch:
         check_string = " ".join(place for place in places_to_check)
         return len(re.findall(f"({word}|{word[::-1]})", check_string, overlapped=True))
 
+    def find_crossed(self, word="MAS"):
+        a, b, c = word[0], word[1], word[2]
+        possible_configs = [
+            f"{a}.{a}.{b}.{c}.{c}",
+            f"{a}.{c}.{b}.{a}.{c}",
+            f"{c}.{c}.{b}.{a}.{a}",
+            f"{c}.{a}.{b}.{c}.{a}",
+        ]
+        crossed = 0
+        for k in range(self.m - 2):
+            for j in range(self.n - 2):
+                config = (
+                    self.rows[k][j]
+                    + "."
+                    + self.rows[k][j + 2]
+                    + "."
+                    + self.rows[k + 1][j + 1]
+                    + "."
+                    + self.rows[k + 2][j]
+                    + "."
+                    + self.rows[k + 2][j + 2]
+                )
+                if config in possible_configs:
+                    crossed += 1
+        return crossed
+
     def __str__(self):
         return "\n".join(row for row in self.rows)
 
@@ -151,7 +192,6 @@ if __name__ == "__main__":
     assert search1.find_word("XMAS") == 4
 
     search2 = WordSearch(test_data2)
-
     assert search2.find_word("XMAS") == test_answer
 
     search3 = WordSearch(test_data3)
@@ -163,3 +203,13 @@ if __name__ == "__main__":
     answer_search = WordSearch(input)
     answer1 = answer_search.find_word("XMAS")
     print(answer1)
+
+    # Part 2
+
+    assert search2.find_crossed("MAS") == test_answer2
+
+    search4 = WordSearch(test_data4)
+    assert search4.find_crossed("MAS") == test_answer2
+
+    answer2 = answer_search.find_crossed("MAS")
+    print(answer2)
