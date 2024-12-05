@@ -2,7 +2,7 @@
 import math
 import collections
 
-# find number of numbers - if number in rule number-1 times then first?
+
 test_data = """47|53
 97|13
 97|61
