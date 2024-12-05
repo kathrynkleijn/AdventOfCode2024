@@ -38,7 +38,8 @@ test_answer2 = 123
 
 
 def check_order(line, rules):
-    line = line.split(",")
+    if type(line) == str:
+        line = line.split(",")
     for rule in rules:
         first, second = rule.split("|")
         if first in line and second in line:
@@ -75,14 +76,15 @@ print(answer1)
 
 
 def corrected_line(rules, line):
-    line = line.split(",")
+    if type(line) == str:
+        line = line.split(",")
     for rule in rules:
         first, second = rule.split("|")
         if first in line and second in line:
             first_index = line.index(first)
             second_index = line.index(second)
             if first_index > second_index:
-                line.insert(first_index, line.pop(second_index))
+                line.insert(second_index, line.pop(first_index))
     return line
 
 
@@ -90,7 +92,9 @@ def sum_of_middle_incorrect(rules, lines):
     sum = 0
     for line in lines:
         if not check_order(line, rules):
-            line = corrected_line(rules, line)
+            while not check_order(line, rules):
+                line = corrected_line(rules, line)
+
             sum += int(line[math.floor(len(line) / 2)])
     return sum
 
