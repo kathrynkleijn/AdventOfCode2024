@@ -1,5 +1,6 @@
 # Day 5 - Print Queue
 import math
+import collections
 
 # find number of numbers - if number in rule number-1 times then first?
 test_data = """47|53
@@ -188,25 +189,78 @@ with open("../input_data/05_Print_Queue.txt", "r", encoding="utf-8") as file:
     input_rules, input_lines = file.read().strip().split("\n\n")
 
 
-test_list_2 = input_rules.split("\n")[:29]
-rule_list = create_rule_list(test_list_2)
-rule_list_old = create_rule_list_old(test_list_2)
-rule_list_old2 = create_rule_list_old2(test_list_2)
-rule_list_old3 = create_rule_list_old3(test_list_2)
-rule_list_old4 = create_rule_list_old4(test_list_2)
-print(rule_list)
-print(rule_list_old)
-print(rule_list_old2)
-print(rule_list_old3)
-print(rule_list_old4)
-print(check_correct(rule_list, test_list_2))  # 85|43, [:27]
-print(check_correct(rule_list_old, test_list_2))  # 91|77 [:29]
-print(check_correct(rule_list_old2, test_list_2))  # 91|77 [:29]
-print(check_correct(rule_list_old3, test_list_2))  # 91|77 [:29]
-print(check_correct(rule_list_old4, test_list_2))  # 91|77 [:29]
+# test_list_2 = input_rules.split("\n")[:29]
+# rule_list = create_rule_list(test_list_2)
+# rule_list_old = create_rule_list_old(test_list_2)
+# rule_list_old2 = create_rule_list_old2(test_list_2)
+# rule_list_old3 = create_rule_list_old3(test_list_2)
+# rule_list_old4 = create_rule_list_old4(test_list_2)
+# print(rule_list)
+# print(rule_list_old)
+# print(rule_list_old2)
+# print(rule_list_old3)
+# print(rule_list_old4)
+# print(check_correct(rule_list, test_list_2))  # 85|43, [:27]
+# print(check_correct(rule_list_old, test_list_2))  # 91|77 [:29]
+# print(check_correct(rule_list_old2, test_list_2))  # 91|77 [:29]
+# print(check_correct(rule_list_old3, test_list_2))  # 91|77 [:29]
+# print(check_correct(rule_list_old4, test_list_2))  # 91|77 [:29]
+
 # input_rule_list = create_rule_list(input_rules.split("\n"))
 # print(input_rule_list)
 
 # print(check_correct(input_rule_list, input_rules.split("\n")))
 # answer1 = sum_of_middle(input_rule_list, input_lines.split("\n"))
 # print(answer1)
+
+
+rules = test_rules.split("\n")
+test = [rule.split("|")[0] for rule in rules]
+test = sorted(test)
+# print(test)
+test_count = collections.Counter(test)
+# print(test_count)
+for count, value in test_count.items():
+    if value == len(test_count):
+        print(count)
+
+# rule_list_initial = [key for key in test_count.keys()]
+rule_list_initial = sorted(test_count, key=test_count.get, reverse=True)
+print(rule_list_initial)
+
+
+def create_rule_list_new(rules, initial_list):
+    rule_list = initial_list
+    for rule in rules:
+        first, second = rule.split("|")
+        if first not in rule_list and second not in rule_list:
+            rule_list.extend([first, second])
+        elif first in rule_list and second not in rule_list:
+            rule_list.append(second)
+        elif first not in rule_list and second in rule_list:
+            rule_list = rule_list[::-1]
+            rule_list.append(first)
+            rule_list = rule_list[::-1]
+        else:
+            first_index = rule_list.index(first)
+            second_index = rule_list.index(second)
+            if first_index > second_index:
+                rule_list.insert(second_index, rule_list.pop(first_index))
+    return rule_list
+
+
+print(create_rule_list_new(test_rules.split("\n"), rule_list_initial))
+
+
+rules = input_rules.split("\n")
+test = [rule.split("|")[0] for rule in rules]
+test = sorted(test)
+test_count = collections.Counter(test)
+print(test_count)
+for count, value in test_count.items():
+    if value == len(test_count):
+        print(count)
+
+rule_list_initial = sorted(test_count, key=test_count.get, reverse=True)
+print(rule_list_initial)
+print(create_rule_list_new(input_rules.split("\n"), rule_list_initial))
