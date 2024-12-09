@@ -37,33 +37,45 @@ class LabMap:
         column_num = self.lines[row_num].find("^")
         return (row_num, column_num)
 
+    def check_up(self, current_row, current_col):
+        return self.lines[current_row - 1][current_col] in ["#", "O"]
+
+    def check_right(self, current_row, current_col):
+        return self.lines[current_row][current_col + 1] in ["#", "O"]
+
+    def check_down(self, current_row, current_col):
+        return self.lines[current_row + 1][current_col] in ["#", "O"]
+
+    def check_left(self, current_row, current_col):
+        return self.lines[current_row][current_col - 1] in ["#", "O"]
+
+    def obstructed_update(self, current_row, current_col, direction):
+        stop = False
+        if self.lines[current_row][current_col] in ["X", ".", "^"]:
+            self.lines[current_row] = (
+                self.lines[current_row][:current_col]
+                + "1"
+                + self.lines[current_row][current_col + 1 :]
+            )
+            self.visited[(current_row, current_col)] = [direction]
+        else:
+            visits = int(self.lines[current_row][current_col]) + 1
+            if visits == 10:
+                stop = True
+            self.lines[current_row] = (
+                self.lines[current_row][:current_col]
+                + f"{visits}"
+                + self.lines[current_row][current_col + 1 :]
+            )
+            self.visited[(current_row, current_col)].append(direction)
+        return stop
+
     def make_step(self, start, direction, obstructed=False):
         current_row, current_col = start
         if obstructed:
-            if (
-                self.lines[current_row][current_col] == "O"
-                or self.lines[current_row][current_col] == "#"
-            ):
-                return 0, 0, 0
-            elif (
-                self.lines[current_row][current_col] == "X"
-                or self.lines[current_row][current_col] == "."
-                or self.lines[current_row][current_col] == "^"
-            ):
-                self.lines[current_row] = (
-                    self.lines[current_row][:current_col]
-                    + "1"
-                    + self.lines[current_row][current_col + 1 :]
-                )
-                self.visited[(current_row, current_col)] = [direction]
-            else:
-                visits = int(self.lines[current_row][current_col]) + 1
-                self.lines[current_row] = (
-                    self.lines[current_row][:current_col]
-                    + f"{visits}"
-                    + self.lines[current_row][current_col + 1 :]
-                )
-                self.visited[(current_row, current_col)].append(direction)
+            stop = self.obstructed_update(current_row, current_col, direction)
+            if stop:
+                return -1, -1, -1
         else:
             self.lines[current_row] = (
                 self.lines[current_row][:current_col]
@@ -73,45 +85,69 @@ class LabMap:
         if direction == "^":
             if current_row == 0:
                 current_row = -1
-            elif (
-                self.lines[current_row - 1][current_col] == "#"
-                or self.lines[current_row - 1][current_col] == "O"
-            ):
+            elif self.check_up(current_row, current_col):
                 direction = ">"
-                current_col += 1
+                if not self.check_right(current_row, current_col):
+                    current_col += 1
+                else:
+                    direction = "v"
+                    if not self.check_down(current_row, current_col):
+                        current_row += 1
+                    else:
+                        direction = "<"
+                        if not self.check_left(current_row, current_col):
+                            current_col = current_col - 1
             else:
                 current_row = current_row - 1
         elif direction == ">":
             if current_col == self.m - 1:
                 current_col = self.m
-            elif (
-                self.lines[current_row][current_col + 1] == "#"
-                or self.lines[current_row][current_col + 1] == "O"
-            ):
+            elif self.check_right(current_row, current_col):
                 direction = "v"
-                current_row += 1
+                if not self.check_down(current_row, current_col):
+                    current_row += 1
+                else:
+                    direction = "<"
+                    if not self.check_left(current_row, current_col):
+                        current_col = current_col - 1
+                    else:
+                        direction = "^"
+                        if not self.check_up(current_row, current_col):
+                            current_row = current_row - 1
             else:
                 current_col += 1
         elif direction == "v":
             if current_row == self.n - 1:
                 current_row = self.n
-            elif (
-                self.lines[current_row + 1][current_col] == "#"
-                or self.lines[current_row + 1][current_col] == "O"
-            ):
+            elif self.check_down(current_row, current_col):
                 direction = "<"
-                current_col = current_col - 1
+                if not self.check_left(current_row, current_col):
+                    current_col = current_col - 1
+                else:
+                    direction = "^"
+                    if not self.check_up(current_row, current_col):
+                        current_row = current_row - 1
+                    else:
+                        direction = ">"
+                        if not self.check_right(current_row, current_col):
+                            current_col += 1
             else:
                 current_row += 1
         else:
             if current_col == 0:
                 current_col = -1
-            elif (
-                self.lines[current_row][current_col - 1] == "#"
-                or self.lines[current_row][current_col - 1] == "O"
-            ):
+            elif self.check_left(current_row, current_col):
                 direction = "^"
-                current_row = current_row - 1
+                if not self.check_up(current_row, current_col):
+                    current_row = current_row - 1
+                else:
+                    direction = ">"
+                    if not self.check_right(current_row, current_col):
+                        current_col += 1
+                    else:
+                        direction = "v"
+                        if not self.check_down(current_row, current_col):
+                            current_row += 1
             else:
                 current_col = current_col - 1
         return current_row, current_col, direction
@@ -120,6 +156,7 @@ class LabMap:
         current_row, current_col = self.start
         direction = self.direction
         position_count = 0
+        outside = False
         while current_row in range(self.m - 1) and current_col in range(self.n - 1):
             previous_row, previous_col = current_row, current_col
             current_row, current_col, direction = self.make_step(
@@ -130,8 +167,8 @@ class LabMap:
                 print(self)
                 print(current_row, current_col)
 
-            if (current_row, current_col, direction) == (0, 0, 0):
-                position_count = -1
+            if current_row < 0 or current_col < 0:
+                outside = True
                 break
             elif self.lines[current_row][current_col] != "X":
                 position_count += 1
@@ -144,7 +181,7 @@ class LabMap:
                 else:
                     continue
 
-        if position_count > 0:
+        if position_count > 0 and not outside:
             current_row, current_col, direction = self.make_step(
                 (current_row, current_col), direction, obstructed
             )
@@ -187,7 +224,7 @@ if __name__ == "__main__":
     assert test_map.walk() == test_answer
 
     with open("../input_data/06_Guard_Gallivant.txt", "r", encoding="utf-8") as file:
-        input = file.read()
+        input = file.read().strip()
 
     answer_map = LabMap(input)
     print(answer_map.start)
@@ -195,17 +232,15 @@ if __name__ == "__main__":
     print(answer1)
 
     positions = [(6, 3), (7, 6), (7, 7), (8, 1), (8, 3), (9, 7)]
-    print(test_map.test_for_loops(positions))
+    assert test_map.test_for_loops(positions) == 6
 
     test_map.reset()
     test_map.walk()
     positions = test_map.non_obstructed_spaces()
-    print(test_map.test_for_loops(positions))
+    assert test_map.test_for_loops(positions) == test_answer2
 
     answer_positions = answer_map.non_obstructed_spaces()
-    # print(answer_map.test_for_loops([(15, 103)], debug=True))
-
     answer2 = answer_map.test_for_loops(answer_positions)
     print(answer2)
 
-# 1478 too low (and slow)
+# 1794 too low (and slow)
