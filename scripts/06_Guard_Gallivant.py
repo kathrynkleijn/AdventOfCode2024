@@ -1,6 +1,7 @@
 # Day 6 - Guard Gallivant
 
 import math
+import collections
 
 test_data = """....#.....
 .........#
@@ -40,6 +41,11 @@ class LabMap:
         current_row, current_col = start
         if obstructed:
             if (
+                self.lines[current_row][current_col] == "O"
+                or self.lines[current_row][current_col] == "#"
+            ):
+                return 0, 0, 0
+            elif (
                 self.lines[current_row][current_col] == "X"
                 or self.lines[current_row][current_col] == "."
                 or self.lines[current_row][current_col] == "^"
@@ -50,7 +56,7 @@ class LabMap:
                         + "1"
                         + self.lines[current_row][current_col + 1 :]
                     )
-                self.visited[(current_row, current_col)] = 1
+                self.visited[(current_row, current_col)] = [direction]
             else:
                 if debug:
                     visits = int(self.lines[current_row][current_col]) + 1
@@ -59,7 +65,7 @@ class LabMap:
                         + f"{visits}"
                         + self.lines[current_row][current_col + 1 :]
                     )
-                self.visited[(current_row, current_col)] += 1
+                self.visited[(current_row, current_col)].append(direction)
         else:
             self.lines[current_row] = (
                 self.lines[current_row][:current_col]
@@ -117,17 +123,16 @@ class LabMap:
         direction = self.direction
         position_count = 0
         while current_row in range(self.m - 1) and current_col in range(self.n - 1):
+            previous_row, previous_col = current_row, current_col
             current_row, current_col, direction = self.make_step(
                 (current_row, current_col), direction, obstructed, debug
             )
-            if (current_row, current_col) == self.start and len(
-                list(self.visited.keys())
-            ) > 1:
-                # doesn't work - what about crossovers?
-                if (
-                    len(list(set(list(self.visited.values())))) == 1
-                    and list(self.visited.values())[0] > 1
-                ):
+            if (current_row, current_col, direction) == (0, 0, 0):
+                position_count = ""
+                break
+            elif obstructed:
+                count = collections.Counter(self.visited[(previous_row, previous_col)])
+                if count[direction] > 1:
                     position_count = 0
                     break
             else:
@@ -168,7 +173,7 @@ class LabMap:
         for position in positions:
             self.add_obstruction(position)
             count = self.walk(obstructed=True, debug=debug)
-            if not count:
+            if count == 0:
                 loops_found += 1
             self.reset()
         return loops_found
@@ -194,9 +199,9 @@ if __name__ == "__main__":
     positions = [(6, 3), (7, 6), (7, 7), (8, 1), (8, 3), (9, 7)]
     print(test_map.test_for_loops(positions, debug=True))
 
-    # test_map.reset()
-    # test_map.walk()
-    # positions = test_map.non_obstructed_spaces()
-    # print(test_map.test_for_loops([(7, 3)], debug=True))
+    test_map.reset()
+    test_map.walk()
+    positions = test_map.non_obstructed_spaces()
+    print(test_map.test_for_loops([(7, 3)], debug=True))
     # print(positions)
-    # print(test_map.test_for_loops(positions))
+    # print(test_map.test_for_loops(positions, debug=True))
