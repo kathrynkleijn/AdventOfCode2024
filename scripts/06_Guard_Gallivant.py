@@ -50,7 +50,6 @@ class LabMap:
         return self.lines[current_row][current_col - 1] in ["#", "O"]
 
     def obstructed_update(self, current_row, current_col, direction):
-        stop = False
         if self.lines[current_row][current_col] in ["X", ".", "^"]:
             self.lines[current_row] = (
                 self.lines[current_row][:current_col]
@@ -59,23 +58,18 @@ class LabMap:
             )
             self.visited[(current_row, current_col)] = [direction]
         else:
-            visits = int(self.lines[current_row][current_col]) + 1
-            if visits == 10:
-                stop = True
+            visits = (int(self.lines[current_row][current_col]) + 1) % 10
             self.lines[current_row] = (
                 self.lines[current_row][:current_col]
                 + f"{visits}"
                 + self.lines[current_row][current_col + 1 :]
             )
             self.visited[(current_row, current_col)].append(direction)
-        return stop
 
     def make_step(self, start, direction, obstructed=False):
         current_row, current_col = start
         if obstructed:
-            stop = self.obstructed_update(current_row, current_col, direction)
-            if stop:
-                return -1, -1, -1
+            self.obstructed_update(current_row, current_col, direction)
         else:
             self.lines[current_row] = (
                 self.lines[current_row][:current_col]
