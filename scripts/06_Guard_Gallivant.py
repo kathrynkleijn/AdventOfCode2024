@@ -29,8 +29,8 @@ class LabMap:
         return "\n".join(line for line in self.lines)
 
     def start_point(self):
-        row_num = math.floor(self.map.find("^") / 13) + 1
-        column_num = self.map.find("^") - 13 * (row_num - 1) - 1
+        row_num = math.floor(self.map.find("^") / (self.m + 3)) + 1
+        column_num = self.lines[row_num].find("^")
         return (row_num, column_num)
 
     def make_step(self, start, direction):
@@ -100,8 +100,12 @@ class LabMap:
 if __name__ == "__main__":
 
     test_map = LabMap(test_data)
-    # print(test_map)
-    # print(test_map.size)
-    # print(test_map.start_point())
+    assert test_map.walk() == test_answer
 
-    # print(test_map.walk(debug=True))
+    with open("../input_data/06_Guard_Gallivant.txt", "r", encoding="utf-8") as file:
+        input = file.read()
+
+    answer_map = LabMap(input)
+    print(answer_map.start)
+    answer1 = answer_map.walk()
+    print(answer1)
