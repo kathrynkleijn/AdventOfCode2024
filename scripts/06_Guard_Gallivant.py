@@ -123,6 +123,7 @@ class LabMap:
             if (current_row, current_col) == self.start and len(
                 list(self.visited.keys())
             ) > 1:
+                # doesn't work - what about crossovers?
                 if (
                     len(list(set(list(self.visited.values())))) == 1
                     and list(self.visited.values())[0] > 1
