@@ -24,7 +24,7 @@ class LabMap:
         self.lines = map.split("\n")
         self.m = len(self.lines[0])
         self.n = len(self.lines)
-        self.size = (self.m, self.n)
+        self.size = (self.n, self.m)
         self.start = self.start_point()
         self.visited = {}
         self.direction = self.lines[self.start[0]][self.start[1]]
@@ -37,7 +37,7 @@ class LabMap:
         column_num = self.lines[row_num].find("^")
         return (row_num, column_num)
 
-    def make_step(self, start, direction, obstructed=False, debug=False):
+    def make_step(self, start, direction, obstructed=False):
         current_row, current_col = start
         if obstructed:
             if (
@@ -50,21 +50,19 @@ class LabMap:
                 or self.lines[current_row][current_col] == "."
                 or self.lines[current_row][current_col] == "^"
             ):
-                if debug:
-                    self.lines[current_row] = (
-                        self.lines[current_row][:current_col]
-                        + "1"
-                        + self.lines[current_row][current_col + 1 :]
-                    )
+                self.lines[current_row] = (
+                    self.lines[current_row][:current_col]
+                    + "1"
+                    + self.lines[current_row][current_col + 1 :]
+                )
                 self.visited[(current_row, current_col)] = [direction]
             else:
-                if debug:
-                    visits = int(self.lines[current_row][current_col]) + 1
-                    self.lines[current_row] = (
-                        self.lines[current_row][:current_col]
-                        + f"{visits}"
-                        + self.lines[current_row][current_col + 1 :]
-                    )
+                visits = int(self.lines[current_row][current_col]) + 1
+                self.lines[current_row] = (
+                    self.lines[current_row][:current_col]
+                    + f"{visits}"
+                    + self.lines[current_row][current_col + 1 :]
+                )
                 self.visited[(current_row, current_col)].append(direction)
         else:
             self.lines[current_row] = (
@@ -74,7 +72,7 @@ class LabMap:
             )
         if direction == "^":
             if current_row == 0:
-                pass
+                current_row = -1
             elif (
                 self.lines[current_row - 1][current_col] == "#"
                 or self.lines[current_row - 1][current_col] == "O"
@@ -84,8 +82,8 @@ class LabMap:
             else:
                 current_row = current_row - 1
         elif direction == ">":
-            if current_col == self.n - 1:
-                pass
+            if current_col == self.m - 1:
+                current_col = self.m
             elif (
                 self.lines[current_row][current_col + 1] == "#"
                 or self.lines[current_row][current_col + 1] == "O"
@@ -95,8 +93,8 @@ class LabMap:
             else:
                 current_col += 1
         elif direction == "v":
-            if current_row == self.m - 1:
-                pass
+            if current_row == self.n - 1:
+                current_row = self.n
             elif (
                 self.lines[current_row + 1][current_col] == "#"
                 or self.lines[current_row + 1][current_col] == "O"
@@ -107,7 +105,7 @@ class LabMap:
                 current_row += 1
         else:
             if current_col == 0:
-                pass
+                current_col = -1
             elif (
                 self.lines[current_row][current_col - 1] == "#"
                 or self.lines[current_row][current_col - 1] == "O"
@@ -125,25 +123,30 @@ class LabMap:
         while current_row in range(self.m - 1) and current_col in range(self.n - 1):
             previous_row, previous_col = current_row, current_col
             current_row, current_col, direction = self.make_step(
-                (current_row, current_col), direction, obstructed, debug
+                (current_row, current_col), direction, obstructed
             )
+            if debug == True:
+                print("\n")
+                print(self)
+                print(current_row, current_col)
+
             if (current_row, current_col, direction) == (0, 0, 0):
-                position_count = ""
+                position_count = -1
                 break
-            elif obstructed:
+            elif self.lines[current_row][current_col] != "X":
+                position_count += 1
+
+            if obstructed:
                 count = collections.Counter(self.visited[(previous_row, previous_col)])
                 if count[direction] > 1:
                     position_count = 0
                     break
-            else:
-                if self.lines[current_row][current_col] != "X":
-                    position_count += 1
-            if debug == True:
-                print("\n")
-                print(self)
-        if position_count:
+                else:
+                    continue
+
+        if position_count > 0:
             current_row, current_col, direction = self.make_step(
-                (current_row, current_col), direction, obstructed, debug
+                (current_row, current_col), direction, obstructed
             )
             position_count += 1
             if debug == True:
@@ -154,11 +157,6 @@ class LabMap:
     def add_obstruction(self, position):
         row, col = position
         self.lines[row] = self.lines[row][:col] + "O" + self.lines[row][col + 1 :]
-
-    def remove_obstruction(self):
-        row = math.floor(self.map.find("O") / (self.m + 3)) + 1
-        col = self.lines[row].find("O")
-        self.lines[row] = self.lines[row][:col] + "." + self.lines[row][col + 1 :]
 
     def non_obstructed_spaces(self):
         positions = []
@@ -173,7 +171,7 @@ class LabMap:
         for position in positions:
             self.add_obstruction(position)
             count = self.walk(obstructed=True, debug=debug)
-            if count == 0:
+            if not count:
                 loops_found += 1
             self.reset()
         return loops_found
@@ -197,11 +195,17 @@ if __name__ == "__main__":
     print(answer1)
 
     positions = [(6, 3), (7, 6), (7, 7), (8, 1), (8, 3), (9, 7)]
-    print(test_map.test_for_loops(positions, debug=True))
+    print(test_map.test_for_loops(positions))
 
     test_map.reset()
     test_map.walk()
     positions = test_map.non_obstructed_spaces()
-    print(test_map.test_for_loops([(7, 3)], debug=True))
-    # print(positions)
-    # print(test_map.test_for_loops(positions, debug=True))
+    print(test_map.test_for_loops(positions))
+
+    answer_positions = answer_map.non_obstructed_spaces()
+    # print(answer_map.test_for_loops([(15, 103)], debug=True))
+
+    answer2 = answer_map.test_for_loops(answer_positions)
+    print(answer2)
+
+# 1478 too low (and slow)
