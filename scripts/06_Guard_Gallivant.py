@@ -38,11 +38,11 @@ class LabMap:
 
     def make_step(self, start, direction, obstructed=False, debug=False):
         current_row, current_col = start
-        print(current_row, current_col, direction)
         if obstructed:
             if (
                 self.lines[current_row][current_col] == "X"
                 or self.lines[current_row][current_col] == "."
+                or self.lines[current_row][current_col] == "^"
             ):
                 if debug:
                     self.lines[current_row] = (
@@ -60,9 +60,6 @@ class LabMap:
                         + self.lines[current_row][current_col + 1 :]
                     )
                 self.visited[(current_row, current_col)] += 1
-            if self.lines[current_row][current_col].isdigit():
-                if int(self.lines[current_row][current_col]) > 3:
-                    return 0, 0, False
         else:
             self.lines[current_row] = (
                 self.lines[current_row][:current_col]
@@ -126,8 +123,11 @@ class LabMap:
             if (current_row, current_col) == self.start and len(
                 list(self.visited.keys())
             ) > 1:
-                if len(list(set(list(self.visited.values())))) == 1:
-                    position_count = "inf"
+                if (
+                    len(list(set(list(self.visited.values())))) == 1
+                    and list(self.visited.values())[0] > 1
+                ):
+                    position_count = 0
                     break
             else:
                 if self.lines[current_row][current_col] != "X":
@@ -135,9 +135,9 @@ class LabMap:
             if debug == True:
                 print("\n")
                 print(self)
-        if not obstructed:
+        if position_count:
             current_row, current_col, direction = self.make_step(
-                (current_row, current_col), direction
+                (current_row, current_col), direction, obstructed, debug
             )
             position_count += 1
             if debug == True:
@@ -166,10 +166,10 @@ class LabMap:
         loops_found = 0
         for position in positions:
             self.add_obstruction(position)
-            loop = self.walk(obstructed=True, debug=debug)
-            if loop:
+            count = self.walk(obstructed=True, debug=debug)
+            if not count:
                 loops_found += 1
-            self.remove_obstruction()
+            self.reset()
         return loops_found
 
     def reset(self):
@@ -180,21 +180,22 @@ class LabMap:
 if __name__ == "__main__":
 
     test_map = LabMap(test_data)
-    # assert test_map.walk() == test_answer
+    assert test_map.walk() == test_answer
 
-    # with open("../input_data/06_Guard_Gallivant.txt", "r", encoding="utf-8") as file:
-    #     input = file.read()
+    with open("../input_data/06_Guard_Gallivant.txt", "r", encoding="utf-8") as file:
+        input = file.read()
 
-    # answer_map = LabMap(input)
-    # print(answer_map.start)
-    # answer1 = answer_map.walk()
-    # print(answer1)
+    answer_map = LabMap(input)
+    print(answer_map.start)
+    answer1 = answer_map.walk()
+    print(answer1)
 
-    # positions = test_map.non_obstructed_spaces()
-
-    # positions = [(6, 3), (7, 6), (7, 7), (8, 1), (8, 3), (9, 7)]
-    # (test_map.test_for_loops(positions))
+    positions = [(6, 3), (7, 6), (7, 7), (8, 1), (8, 3), (9, 7)]
+    print(test_map.test_for_loops(positions, debug=True))
 
     # test_map.reset()
-    test_map.walk()
-    print(test_map.test_for_loops([(1, 4)], debug=True))
+    # test_map.walk()
+    # positions = test_map.non_obstructed_spaces()
+    # print(test_map.test_for_loops([(7, 3)], debug=True))
+    # print(positions)
+    # print(test_map.test_for_loops(positions))
