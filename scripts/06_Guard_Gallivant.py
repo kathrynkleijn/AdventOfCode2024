@@ -28,7 +28,7 @@ class LabMap:
         self.n = len(self.columns)
         self.size = (self.m, self.n)
         self.start = self.start_point()
-        self.visited = {}
+        self.visited = collections.defaultdict(list)
         self.start_direction = self.lines[self.start[0]][self.start[1]]
 
     def __str__(self):
@@ -45,42 +45,16 @@ class LabMap:
             self.columns.append("".join(row[col] for row in self.lines))
         return self.columns
 
-    def check_up(self, current_row, current_col):
-        return self.lines[current_row - 1][current_col] in ["#", "O"]
-
-    def check_right(self, current_row, current_col):
-        return self.lines[current_row][current_col + 1] in ["#", "O"]
-
-    def check_down(self, current_row, current_col):
-        return self.lines[current_row + 1][current_col] in ["#", "O"]
-
-    def check_left(self, current_row, current_col):
-        return self.lines[current_row][current_col - 1] in ["#", "O"]
-
-    def obstructed_update(self, current_row, current_col, direction, debug=False):
-        if self.lines[current_row][current_col] in [".", "^"]:
-            # if debug:
-            self.lines[current_row] = (
-                self.lines[current_row][:current_col]
-                + "1"
-                + self.lines[current_row][current_col + 1 :]
-            )
-            self.visited[(current_row, current_col)] = [direction]
-        else:
-            # if debug:
-            visits = (int(self.lines[current_row][current_col]) + 1) % 10
-            self.lines[current_row] = (
-                self.lines[current_row][:current_col]
-                + f"{visits}"
-                + self.lines[current_row][current_col + 1 :]
-            )
-            self.visited[(current_row, current_col)].append(direction)
-
     def find_next_obstruction(self, current_row, current_col, direction):
         new_position = (current_row, current_col)
         if direction == "^":
             try:
-                next_obstruction = self.columns[current_col][:current_row].find("#")
+                next_obstruction = self.columns[current_col][:current_row][::-1].find(
+                    "#"
+                )
+                next_obstruction = (
+                    len(self.columns[current_col][:current_row]) - next_obstruction
+                ) - 1
             except:
                 next_obstruction = -1
             if next_obstruction < new_position[0] - 1 and next_obstruction >= 0:
@@ -148,7 +122,10 @@ class LabMap:
             direction = "<"
         else:
             try:
-                next_obstruction = self.lines[current_row][:current_col].find("#")
+                next_obstruction = self.lines[current_row][:current_col][::-1].find("#")
+                next_obstruction = (
+                    len(self.lines[current_row][:current_col]) - next_obstruction
+                ) - 1
             except:
                 next_obstruction = -1
             if next_obstruction < new_position[1] - 1 and next_obstruction >= 0:
@@ -173,8 +150,8 @@ class LabMap:
         (current_row, current_col), direction = self.find_next_obstruction(
             current_row, current_col, direction
         )
-        # if obstructed:
-        #    self.obstructed_update(current_row, current_col, direction, debug)
+        if obstructed:
+            self.visited[(current_row, current_col)].append(direction)
 
         return current_row, current_col, direction
 
@@ -182,8 +159,8 @@ class LabMap:
         current_row, current_col = self.start
         direction = self.start_direction
         outside = False
+        position_count = True
         while current_row in range(self.m - 1) and current_col in range(self.n - 1):
-            previous_row, previous_col = current_row, current_col
             current_row, current_col, direction = self.make_move(
                 (current_row, current_col), direction, obstructed, debug
             )
@@ -197,23 +174,24 @@ class LabMap:
                 break
 
             if obstructed:
-                count = collections.Counter(self.visited[(previous_row, previous_col)])
+                count = collections.Counter(self.visited[(current_row, current_col)])
                 if count[direction] > 1:
-                    position_count = 0
+                    position_count = False
                     break
                 else:
                     continue
-
-        position_count = 0
-        for line in self.lines:
-            position_count += collections.Counter(line)["X"]
-        if not outside:
-            position_count += 1
+        if position_count:
+            position_count = 0
+            for line in self.lines:
+                position_count += collections.Counter(line)["X"]
+            if not outside:
+                position_count += 1
         return position_count
 
     def add_obstruction(self, position):
         row, col = position
         self.lines[row] = self.lines[row][:col] + "#" + self.lines[row][col + 1 :]
+        self.columns[col] = self.columns[col][:row] + "#" + self.columns[col][row + 1 :]
 
     def non_obstructed_spaces(self):
         positions = []
@@ -235,7 +213,7 @@ class LabMap:
 
     def reset(self):
         self.lines = self.map.split("\n")
-        self.visited = {}
+        self.visited = collections.defaultdict(list)
 
 
 if __name__ == "__main__":
@@ -247,25 +225,23 @@ if __name__ == "__main__":
         input = file.read().strip()
 
     answer_map = LabMap(input)
+
     print(answer_map.start)
     answer1 = answer_map.walk()
     print(answer1)
 
-    # test_map.reset()
+    test_map.reset()
+    positions = [(6, 3), (7, 6), (7, 7), (8, 1), (8, 3), (9, 7)]
+    assert test_map.test_for_loops(positions) == 6
 
-    # positions = [(6, 3), (7, 6), (7, 7), (8, 1), (8, 3), (9, 7)]
-    # assert test_map.test_for_loops(positions) == 6
-
-    # test_map.reset()
-    # test_map.walk()
-    # positions = test_map.non_obstructed_spaces()
-    # test_map.reset()
-    # assert test_map.test_for_loops(positions) == test_answer2
+    test_map.reset()
+    test_map.walk()
+    positions = test_map.non_obstructed_spaces()
+    test_map.reset()
+    assert test_map.test_for_loops(positions) == test_answer2
 
     # answer_positions = answer_map.non_obstructed_spaces()
     # answer2 = answer_map.test_for_loops(answer_positions)
     # print(answer2)
 
 # 1794 too low (and slow)
-
-# no longer working for part 1
