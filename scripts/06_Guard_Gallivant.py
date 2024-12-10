@@ -145,7 +145,6 @@ class LabMap:
                         + "X"
                         + self.lines[row][current_col + 1 :]
                     )
-
             direction = "<"
         else:
             try:
