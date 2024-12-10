@@ -20,14 +20,14 @@ test_answer = 3749
 test_answer2 = 11387
 
 
-def concatentaion(value1, value2):
-    return int(str(value1) + str(value2))
+def concatentaion(values):
+    return int(str(values[0]) + str(values[1]))
 
 
-assert concatentaion(15, 6) == 156
+assert concatentaion([15, 6]) == 156
 
-ops_1 = [sum, math.prod, concatentaion]
-ops_2 = [sum, math.prod]
+ops_1 = [sum, math.prod]
+ops_2 = [sum, math.prod, concatentaion]
 
 
 def parse_data(input):
@@ -57,25 +57,29 @@ def check_permutations(key, value, ops):
     return False
 
 
-assert check_permutations("190", ["10", "19"]) == 190
-assert check_permutations("3267", ["81", "40", "27"]) == 3267
-assert check_permutations("292", ["11", "6", "16", "20"]) == 292
+assert check_permutations("190", ["10", "19"], ops_1) == 190
+assert check_permutations("3267", ["81", "40", "27"], ops_1) == 3267
+assert check_permutations("292", ["11", "6", "16", "20"], ops_1) == 292
 
 
-def find_calibration_possibilities(input):
+def find_calibration_possibilities(input, ops):
     total_cal = 0
     for key, value in input.items():
-        total_cal += check_permutations(key, value)
+        total_cal += check_permutations(key, value, ops)
     return total_cal
 
 
 test_parsed = parse_data(test_data)
-assert find_calibration_possibilities(test_parsed) == test_answer
+assert find_calibration_possibilities(test_parsed, ops_1) == test_answer
+assert find_calibration_possibilities(test_parsed, ops_2) == test_answer2
 
 if __name__ == "__main__":
     with open("../input_data/07_Bridge_Repair.txt", "r", encoding="utf-8") as file:
         input = file.read().strip().split("\n")
 
     parsed = parse_data(input)
-    answer1 = find_calibration_possibilities(parsed)
+    answer1 = find_calibration_possibilities(parsed, ops_1)
     print(answer1)
+
+    answer2 = find_calibration_possibilities(parsed, ops_2)
+    print(answer2)
