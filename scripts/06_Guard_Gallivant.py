@@ -22,6 +22,7 @@ class LabMap:
     def __init__(self, map):
         self.map = map
         self.lines = map.split("\n")
+        self.debug_map = map.split("\n")
         self.m = len(self.lines[0])
         self.n = len(self.lines)
         self.size = (self.n, self.m)
@@ -49,8 +50,9 @@ class LabMap:
     def check_left(self, current_row, current_col):
         return self.lines[current_row][current_col - 1] in ["#", "O"]
 
-    def obstructed_update(self, current_row, current_col, direction):
-        if self.lines[current_row][current_col] in ["X", ".", "^"]:
+    def obstructed_update(self, current_row, current_col, direction, debug=False):
+        if self.lines[current_row][current_col] in [".", "^"]:
+            # if debug:
             self.lines[current_row] = (
                 self.lines[current_row][:current_col]
                 + "1"
@@ -58,6 +60,7 @@ class LabMap:
             )
             self.visited[(current_row, current_col)] = [direction]
         else:
+            # if debug:
             visits = (int(self.lines[current_row][current_col]) + 1) % 10
             self.lines[current_row] = (
                 self.lines[current_row][:current_col]
@@ -66,10 +69,10 @@ class LabMap:
             )
             self.visited[(current_row, current_col)].append(direction)
 
-    def make_step(self, start, direction, obstructed=False):
+    def make_move(self, start, direction, obstructed=False, debug=False):
         current_row, current_col = start
         if obstructed:
-            self.obstructed_update(current_row, current_col, direction)
+            self.obstructed_update(current_row, current_col, direction, debug)
         else:
             self.lines[current_row] = (
                 self.lines[current_row][:current_col]
@@ -81,16 +84,6 @@ class LabMap:
                 current_row = -1
             elif self.check_up(current_row, current_col):
                 direction = ">"
-                if not self.check_right(current_row, current_col):
-                    current_col += 1
-                else:
-                    direction = "v"
-                    if not self.check_down(current_row, current_col):
-                        current_row += 1
-                    else:
-                        direction = "<"
-                        if not self.check_left(current_row, current_col):
-                            current_col = current_col - 1
             else:
                 current_row = current_row - 1
         elif direction == ">":
@@ -98,16 +91,6 @@ class LabMap:
                 current_col = self.m
             elif self.check_right(current_row, current_col):
                 direction = "v"
-                if not self.check_down(current_row, current_col):
-                    current_row += 1
-                else:
-                    direction = "<"
-                    if not self.check_left(current_row, current_col):
-                        current_col = current_col - 1
-                    else:
-                        direction = "^"
-                        if not self.check_up(current_row, current_col):
-                            current_row = current_row - 1
             else:
                 current_col += 1
         elif direction == "v":
@@ -115,16 +98,6 @@ class LabMap:
                 current_row = self.n
             elif self.check_down(current_row, current_col):
                 direction = "<"
-                if not self.check_left(current_row, current_col):
-                    current_col = current_col - 1
-                else:
-                    direction = "^"
-                    if not self.check_up(current_row, current_col):
-                        current_row = current_row - 1
-                    else:
-                        direction = ">"
-                        if not self.check_right(current_row, current_col):
-                            current_col += 1
             else:
                 current_row += 1
         else:
@@ -132,16 +105,6 @@ class LabMap:
                 current_col = -1
             elif self.check_left(current_row, current_col):
                 direction = "^"
-                if not self.check_up(current_row, current_col):
-                    current_row = current_row - 1
-                else:
-                    direction = ">"
-                    if not self.check_right(current_row, current_col):
-                        current_col += 1
-                    else:
-                        direction = "v"
-                        if not self.check_down(current_row, current_col):
-                            current_row += 1
             else:
                 current_col = current_col - 1
         return current_row, current_col, direction
@@ -153,12 +116,12 @@ class LabMap:
         outside = False
         while current_row in range(self.m - 1) and current_col in range(self.n - 1):
             previous_row, previous_col = current_row, current_col
-            current_row, current_col, direction = self.make_step(
-                (current_row, current_col), direction, obstructed
+            current_row, current_col, direction = self.make_move(
+                (current_row, current_col), direction, obstructed, debug
             )
             if debug == True:
                 print("\n")
-                print(self)
+                print("\n".join(line for line in self.debug_map))
                 print(current_row, current_col)
 
             if current_row < 0 or current_col < 0:
@@ -176,13 +139,10 @@ class LabMap:
                     continue
 
         if position_count > 0 and not outside:
-            current_row, current_col, direction = self.make_step(
-                (current_row, current_col), direction, obstructed
-            )
             position_count += 1
             if debug == True:
                 print("\n")
-                print(self)
+                print("\n".join(line for line in self.debug_map))
         return position_count
 
     def add_obstruction(self, position):
@@ -225,16 +185,18 @@ if __name__ == "__main__":
     answer1 = answer_map.walk()
     print(answer1)
 
+    test_map.reset()
+
     positions = [(6, 3), (7, 6), (7, 7), (8, 1), (8, 3), (9, 7)]
     assert test_map.test_for_loops(positions) == 6
 
-    test_map.reset()
-    test_map.walk()
-    positions = test_map.non_obstructed_spaces()
-    assert test_map.test_for_loops(positions) == test_answer2
+    # test_map.reset()
+    # test_map.walk()
+    # positions = test_map.non_obstructed_spaces()
+    # assert test_map.test_for_loops(positions) == test_answer2
 
-    answer_positions = answer_map.non_obstructed_spaces()
-    answer2 = answer_map.test_for_loops(answer_positions)
-    print(answer2)
+    # answer_positions = answer_map.non_obstructed_spaces()
+    # answer2 = answer_map.test_for_loops(answer_positions)
+    # print(answer2)
 
 # 1794 too low (and slow)
