@@ -57,7 +57,7 @@ class LabMap:
                 ) - 1
             except:
                 next_obstruction = -1
-            if next_obstruction < new_position[0] - 1 and next_obstruction >= 0:
+            if next_obstruction < new_position[0] and next_obstruction >= 0:
                 new_position = (next_obstruction + 1, current_col)
                 for row in range(new_position[0], current_row + 1):
                     self.lines[row] = (
@@ -82,7 +82,7 @@ class LabMap:
                 )
             except:
                 next_obstruction = -1
-            if next_obstruction > new_position[1] + 1:
+            if next_obstruction > new_position[1]:
                 new_position = (current_row, next_obstruction - 1)
                 num_moves = new_position[1] - current_col + 1
                 self.lines[current_row] = (
@@ -103,7 +103,7 @@ class LabMap:
                 )
             except:
                 next_obstruction = -1
-            if next_obstruction > new_position[0] + 1:
+            if next_obstruction > new_position[0]:
                 new_position = (next_obstruction - 1, current_col)
                 for row in range(current_row, new_position[0] + 1):
                     self.lines[row] = (
@@ -128,7 +128,7 @@ class LabMap:
                 ) - 1
             except:
                 next_obstruction = -1
-            if next_obstruction < new_position[1] - 1 and next_obstruction >= 0:
+            if next_obstruction < new_position[1] and next_obstruction >= 0:
                 new_position = (current_row, next_obstruction + 1)
                 num_moves = current_col - new_position[1] + 1
                 self.lines[current_row] = (
@@ -213,6 +213,7 @@ class LabMap:
 
     def reset(self):
         self.lines = self.map.split("\n")
+        self.columns = self.to_columns()
         self.visited = collections.defaultdict(list)
 
 
@@ -240,9 +241,7 @@ if __name__ == "__main__":
     test_map.reset()
     assert test_map.test_for_loops(positions) == test_answer2
 
-    # answer_positions = answer_map.non_obstructed_spaces()
-    # answer2 = answer_map.test_for_loops(answer_positions)
-    # print(answer2)
-
-# 1794 too low (and slow)
-# even slower now...
+    answer_positions = answer_map.non_obstructed_spaces()
+    answer_map.reset()
+    answer2 = answer_map.test_for_loops(answer_positions)
+    print(answer2)
