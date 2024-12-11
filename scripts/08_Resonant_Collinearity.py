@@ -16,6 +16,7 @@ test_data = """............
 ............
 ............"""
 test_answer = 14
+test_answer2 = 34
 
 test_data2 = """..........
 ...#......
@@ -50,6 +51,17 @@ test_data4 = """..........
 ..........
 .........."""
 
+test_data5 = """T.........
+...T......
+.T........
+..........
+..........
+..........
+..........
+..........
+..........
+.........."""
+
 
 class AntennaMap:
 
@@ -63,6 +75,7 @@ class AntennaMap:
         self.frequencies = self.unique_frequency()
         self.antennas = self.find_positions()
         self.nodes = self.find_antinodes()
+        self.harmonic_nodes = self.find_antinodes_with_harmonics()
 
     def to_columns(self):
         self.columns = []
@@ -96,8 +109,35 @@ class AntennaMap:
                 )
         return [(x, y) for (x, y) in nodes if 0 <= x < self.n and 0 <= y < self.m]
 
-    def num_of_unique_antinodes(self):
-        return len(set(self.nodes))
+    def num_of_unique_antinodes(self, harmonic=False):
+        if harmonic:
+            nodes = self.harmonic_nodes
+        else:
+            nodes = self.nodes
+        return len(set(nodes))
+
+    def find_antinodes_with_harmonics(self):
+        nodes = []
+        for antennas in self.antennas.values():
+            nodes.extend(antennas)
+            antenna_pairs = [pair for pair in itertools.combinations(antennas, 2)]
+            for pair in antenna_pairs:
+                difference = [(y - x) for x, y in zip(pair[0], pair[1])]
+                difference_multiples = [difference]
+                i = 2
+                diff_mult = [diff * i for diff in difference]
+                while abs(diff_mult[0]) < self.m and abs(diff_mult[1]) < self.n:
+                    difference_multiples.append([diff * i for diff in difference])
+                    i += 1
+                    diff_mult = [diff * i for diff in difference]
+                for diff in difference_multiples:
+                    nodes.extend(
+                        [
+                            (pair[0][0] - diff[0], pair[0][1] - diff[1]),
+                            (pair[1][0] + diff[0], pair[1][1] + diff[1]),
+                        ]
+                    )
+        return [(x, y) for (x, y) in nodes if 0 <= x < self.n and 0 <= y < self.m]
 
 
 if __name__ == "__main__":
@@ -129,3 +169,13 @@ if __name__ == "__main__":
     answer_map = AntennaMap(input)
     answer1 = answer_map.num_of_unique_antinodes()
     print(answer1)
+
+    test_map5 = AntennaMap(test_data5)
+    assert set(test_map5.harmonic_nodes) == set(
+        [(0, 0), (0, 5), (1, 3), (2, 1), (2, 6), (3, 9), (4, 2), (6, 3), (8, 4)]
+    )
+
+    assert test_map.num_of_unique_antinodes(harmonic=True) == test_answer2
+
+    answer2 = answer_map.num_of_unique_antinodes(harmonic=True)
+    print(answer2)
