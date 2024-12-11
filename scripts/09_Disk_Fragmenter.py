@@ -106,22 +106,28 @@ assert parse_data(test_data1) == (
 def move_files(files, free):
     for key, value in reversed(files.items()):
         first_empty_length = list(free.values())[0]
+        first_empty_place = list(free.keys())[0]
         print(key, value[1], first_empty_length)
-        if value[1] <= first_empty_length:
+        if value[1] <= first_empty_length and value[0] > first_empty_place:
             files[key] = [list(free.keys())[0], value[1]]
             remaining_free = first_empty_length - value[1]
+            new_index = list(free.keys())[0] + value[1]
             del free[list(free.keys())[0]]
             if remaining_free:
-                new_index = list(free.keys())[0] + value[1]
                 free[new_index] = remaining_free
                 free = OrderedDict(sorted(free.items()))
+            print(files, free)
     return files, free
 
 
 def files_repr(files, free):
     parsed = []
+    reordered_files = OrderedDict()
     for id, value in files.items():
-        parsed.extend([id] * value[1])
+        reordered_files[value[0]] = [id, value[1]]
+    reordered_files = OrderedDict(sorted(reordered_files.items()))
+    for value in reordered_files.values():
+        parsed.extend([value[0]] * value[1])
     for index, empty in free.items():
         for i in range(empty):
             parsed.insert(index + i, ".")
