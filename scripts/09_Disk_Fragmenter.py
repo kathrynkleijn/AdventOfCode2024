@@ -75,8 +75,8 @@ with open("../input_data/09_Disk_Fragmenter.txt", "r", encoding="utf-8") as file
 
 input = "".join(line for line in input)
 
-answer1 = compute_checksum(input)
-print(answer1)
+# answer1 = compute_checksum(input)
+# print(answer1)
 
 
 # Part 2
@@ -120,30 +120,51 @@ def files_repr(files, free):
 
 def move_files(files, free):
     for key, value in reversed(files.items()):
-        first_empty_length = list(free.values())[0]
-        first_empty_place = list(free.keys())[0]
-        second_empty_length = list(free.values())[1]
-        second_empty_place = list(free.keys())[1]
 
-        if value[1] <= first_empty_length and value[0] > first_empty_place:
-            files[key] = [list(free.keys())[0], value[1]]
-            remaining_free = first_empty_length - value[1]
-            new_index = list(free.keys())[0] + value[1]
-            del free[list(free.keys())[0]]
+        for i in range(len(list(free.values()))):
+            empty_length = list(free.values())[i]
+            empty_place = list(free.keys())[i]
+
+            if value[1] <= empty_length and value[0] > empty_place:
+                files[key] = [empty_place, value[1]]
+                remaining_free = empty_length - value[1]
+                new_index = empty_place + value[1]
+                del free[empty_place]
+                if remaining_free:
+                    free[new_index] = remaining_free
+                    free = OrderedDict(sorted(free.items()))
+                free[value[0]] = value[1]
+
+                break
+            else:
+                continue
+
+    return files, free
+
+
+def move_files2(files, free):
+    for key, value in reversed(files.items()):
+        empty_list = list(free.items())
+        possible_space = [
+            (x, y) for (x, y) in empty_list if y >= value[1] and x < value[0]
+        ]
+        try:
+            index = empty_list.index(possible_space[0])
+
+            empty_length = list(free.values())[index]
+            empty_place = list(free.keys())[index]
+
+            files[key] = [empty_place, value[1]]
+            remaining_free = empty_length - value[1]
+            new_index = empty_place + value[1]
+            del free[empty_place]
             if remaining_free:
                 free[new_index] = remaining_free
-                free = OrderedDict(sorted(free.items()))
             free[value[0]] = value[1]
+            free = OrderedDict(sorted(free.items()))
+        except:
+            continue
 
-        elif value[1] <= second_empty_length and value[0] > second_empty_place:
-            files[key] = [list(free.keys())[1], value[1]]
-            remaining_free = second_empty_length - value[1]
-            new_index = list(free.keys())[1] + value[1]
-            del free[list(free.keys())[1]]
-            if remaining_free:
-                free[new_index] = remaining_free
-                free = OrderedDict(sorted(free.items()))
-            free[value[0]] = value[1]
     return files, free
 
 
@@ -167,11 +188,6 @@ assert files_repr(files1, free1) == [
 ]
 
 
-files, free = parse_data(test_data2)
-files, free = move_files(files, free)
-print(files_repr(files, free))
-
-
 def compute_checksum(input):
     files, free = parse_data(input)
     reordered_files, free = move_files(files, free)
@@ -184,8 +200,18 @@ def compute_checksum(input):
 
 assert compute_checksum(test_data2) == test_answer2_2
 
-answer2 = compute_checksum(input)
+
+def compute_checksum2(input):
+    files, free = parse_data(input)
+    reordered_files, free = move_files2(files, free)
+    checksum = 0
+    for id, value in reordered_files.items():
+        for i in range(value[1]):
+            checksum += id * (value[0] + i)
+    return checksum
+
+
+assert compute_checksum2(test_data2) == test_answer2_2
+
+answer2 = compute_checksum2(input)
 print(answer2)
-
-
-# 15491510484559 too high
