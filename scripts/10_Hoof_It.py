@@ -200,6 +200,7 @@ class HikingMap:
         return ends
 
     def count_num_trails(self, trailhead, debug=False):
+        rating = 0
         num_trails = 0
         trailheads = OrderedDict()
         trailheads[trailhead] = 0
@@ -225,6 +226,7 @@ class HikingMap:
                 if (current_row, current_col) not in tops:
                     tops.append((current_row, current_col))
                     num_trails += 1
+                rating += 1
             if num_trails == len(self.ends):
                 break
             try:
@@ -234,7 +236,7 @@ class HikingMap:
 
             checked.append(trailhead)
             checked = list(set(checked))
-        return num_trails
+        return num_trails, rating
 
     def check_top(self, trailhead):
         row, col = trailhead
@@ -245,10 +247,13 @@ class HikingMap:
 
     def count_all_trails(self, debug=False):
         total = 0
+        rating = 0
         trailheads = self.possible_trailheads()
         for trailhead in trailheads:
-            total += self.count_num_trails(trailhead, debug)
-        return total
+            tot, rate = self.count_num_trails(trailhead, debug)
+            total += tot
+            rating += rate
+        return total, rating
 
 
 if __name__ == "__main__":
@@ -262,8 +267,8 @@ if __name__ == "__main__":
 
     # test_map1.trail(trailhead, debug=True)
 
-    assert test_map1.count_num_trails(trailhead) == 1
-    assert test_map1.count_all_trails() == test_answer1
+    assert test_map1.count_num_trails(trailhead)[0] == 1
+    assert test_map1.count_all_trails()[0] == test_answer1
 
     test_map2 = HikingMap(test_data2)
 
@@ -272,18 +277,23 @@ if __name__ == "__main__":
 
     # test_map2.trail((0, 2), debug=True)
 
-    assert test_map2.count_all_trails() == test_answer2
+    assert test_map2.count_all_trails()[0] == test_answer2
 
     test_map3 = HikingMap(test_data3)
-    assert test_map3.count_all_trails() == 2
+    assert test_map3.count_all_trails()[0] == 2
     test_map4 = HikingMap(test_data4)
-    assert test_map4.count_all_trails() == 4
+    assert test_map4.count_all_trails()[0] == 4
     test_map5 = HikingMap(test_data5)
-    assert test_map5.count_all_trails() == 3
+    assert test_map5.count_all_trails()[0] == 3
 
     with open("../input_data/10_Hoof_It.txt", "r", encoding="utf-8") as file:
         input = file.read().strip()
 
     answer_map = HikingMap(input)
-    answer1 = answer_map.count_all_trails()
+    answer1 = answer_map.count_all_trails()[0]
     print(answer1)
+
+    # Part 2
+
+    print(test_map2.count_all_trails())
+    assert test_map2.count_all_trails()[1] == 81
