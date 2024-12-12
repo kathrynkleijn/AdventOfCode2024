@@ -46,32 +46,6 @@ class HikingMap:
             self.columns.append([row[col] for row in self.rows])
         return self.columns
 
-    # def make_move(self, current_row, current_col, previous_row, previous_col, height):
-    #     if (
-    #         current_col < self.n - 1
-    #         and self.rows[current_row][current_col + 1] == height + 1
-    #     ):
-    #         previous_row, previous_col = current_row, current_col
-    #         current_col += 1
-
-    #     elif (
-    #         current_row < self.m - 1
-    #         and self.columns[current_col][current_row + 1] == height + 1
-    #     ):
-    #         previous_row, previous_col = current_row, current_col
-    #         current_row += 1
-    #     elif (
-    #         current_row > 0 and self.columns[current_col][current_row - 1] == height + 1
-    #     ):
-    #         previous_row, previous_col = current_row, current_col
-    #         current_row = current_row - 1
-    #     elif current_col > 0 and self.rows[current_row][current_col - 1] == height + 1:
-    #         previous_row, previous_col = current_row, current_col
-    #         current_col = current_col - 1
-    #     else:
-    #         current_row, current_col = previous_row, previous_col
-    #     return current_row, current_col, previous_row, previous_col
-
     def make_move(self, current_row, current_col, previous_row, previous_col, move):
         if move == "right":
             previous_row, previous_col = current_row, current_col
@@ -160,31 +134,6 @@ class HikingMap:
                 new_row = current_row - 1
             alternatives.append((new_row, new_col))
         return alternatives
-
-    # def trail(self, trailhead, debug=False):
-    #     current_row, current_col = trailhead
-    #     previous_row, previous_col = trailhead
-    #     height = 0
-    #     trail = True
-    #     while height < 9:
-    #         if debug:
-    #             print(current_row, current_col, height)
-    #             self.debug[current_row][current_col] = "X"
-    #             debug_repr = ""
-    #             for line in self.debug:
-    #                 line = "".join(str(char) for char in line)
-    #                 debug_repr += "\n" + line
-
-    #             print(debug_repr)
-    #         current_row, current_col, previous_row, previous_col = self.make_move(
-    #             current_row, current_col, previous_row, previous_col, height
-    #         )
-    #         if (previous_row, previous_col) == (current_row, current_col):
-    #             trail = False
-    #             break
-    #         height = self.rows[current_row][current_col]
-
-    #     return trail
 
     def possible_trailheads(self):
         trailheads = []
