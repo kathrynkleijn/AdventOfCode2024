@@ -211,6 +211,7 @@ class HikingMap:
             height = trailheads[trailhead]
             if trailhead in checked:
                 trailheads.pop(trailhead, None)
+                rating += 1
                 continue
             top = self.check_top(trailhead)
             if top:
