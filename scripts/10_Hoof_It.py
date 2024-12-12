@@ -41,10 +41,10 @@ class HikingMap:
         return self.rows
 
     def to_columns(self):
-        self.columns = []
+        columns = []
         for col in range(len(self.rows[0])):
-            self.columns.append([row[col] for row in self.rows])
-        return self.columns
+            columns.append([row[col] for row in self.rows])
+        return columns
 
     def make_move(self, current_row, current_col, previous_row, previous_col, move):
         if move == "right":
@@ -105,15 +105,16 @@ class HikingMap:
                     current_row, current_col, previous_row, previous_col, moves[0]
                 )
             else:
-                alternatives = self.setup_alternatives(
-                    current_row, current_col, moves[1:]
-                )
+                alts = self.setup_alternatives(current_row, current_col, moves[1:])
                 current_row, current_col, previous_row, previous_col = self.make_move(
                     current_row, current_col, previous_row, previous_col, moves[0]
                 )
+                alternatives.extend(alts)
 
             height = self.rows[current_row][current_col]
+            # print(alternatives)
 
+        print(self.rows)
         if debug:
             print(debug_repr)
             self.debug = self.to_rows()
@@ -164,7 +165,7 @@ class HikingMap:
         while trailheads:
             trailhead = trailheads[0]
             top = self.check_top(trailhead)
-            print(f"trailhead = {trailhead}")
+            # print(f"trailhead = {trailhead}")
             if top:
                 trail = True
                 current_row, current_col = trailhead
@@ -174,17 +175,15 @@ class HikingMap:
                 )
                 trailheads.extend(alternatives)
             if trail:
-                print(f"place = {current_row, current_col}")
-                print(f"tops = {tops}")
+                # print(f"place = {current_row, current_col}")
+                # print(f"tops = {tops}")
                 if (current_row, current_col) not in tops:
                     tops.append((current_row, current_col))
                     num_trails += 1
-                else:
-                    break
             if num_trails == len(self.ends):
                 break
-            print(f"tops = {tops}")
-            print(f"num = {num_trails}")
+            # print(f"tops = {tops}")
+            # print(f"num = {num_trails}")
             trailheads.pop(0)
 
         return num_trails
@@ -208,7 +207,7 @@ if __name__ == "__main__":
 
     # test_map1.trail(trailhead, debug=True)
 
-    # print(test_map1.count_num_trails(trailhead))
+    # assert test_map1.count_num_trails(trailhead) == 1
 
     test_map2 = HikingMap(test_data2)
 
@@ -217,6 +216,6 @@ if __name__ == "__main__":
 
     # test_map2.trail((0, 2), debug=True)
 
-    print(test_map2.count_num_trails((0, 2), debug=True))
+    assert test_map2.count_num_trails((0, 2), debug=True) == 5
 
-    # works for some, but how do we go back and re-check the start?
+    # something off with the debug - with debug= False, does not break
