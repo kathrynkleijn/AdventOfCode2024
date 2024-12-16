@@ -54,19 +54,26 @@ def num_of_stones_long(stones, blinks):
     stone_lengths = []
     stone_sections = [stones]
     for blinks_ in blink_sections:
+        tot_blinks = blinks_
         for stones_ in stone_sections:
             while blinks_:
                 blinks_ = blinks_ - 1
                 stones_ = blink(stones_)
+            blinks_ = tot_blinks
             stone_lengths.append(len(stones_))
-            stone_sections = [
-                stones_[: int(math.floor(len(stones) / 2))],
-                stones_[int(math.floor(len(stones) / 2)) :],
-            ]
+            stone_sections.pop(0)
+            if len(stones_) != 1:
+                for i in range(int(math.ceil(len(stones_) / 5))):
+                    try:
+                        stone_sections.append(stones_[i * 5 : (i + 1) * 5])
+                    except:
+                        stone_sections.append(stones_[i * 5 :])
+            print(sum(stone_lengths))
+        print("break")
     return sum(stone_lengths)
 
 
 answer2 = num_of_stones_long(input, 75)
 print(answer2)
 
-# 807190 too low
+# 15636990 too low
