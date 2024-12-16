@@ -28,52 +28,51 @@ def num_of_stones(stones, blinks):
     while blinks:
         blinks = blinks - 1
         stones = blink(stones)
-    return len(stones)
+    return len(stones), stones
 
 
-assert num_of_stones(test_data, 25) == 55312
+assert num_of_stones(test_data, 25)[0] == 55312
 
 with open("../input_data/11_Plutonian_Pebbles.txt", "r", encoding="utf-8") as file:
     input = file.read().strip().split(" ")
 
-answer1 = num_of_stones(input, 25)
+answer1 = num_of_stones(input, 25)[0]
 print(answer1)
 
 
 # Part 2
 
+zero_answer = num_of_stones(["0"], 25)
+one_answer = num_of_stones(["1"], 25)
 
-def num_of_stones_long(stones, blinks):
-    blink_sections = []
-    count = 0
-    while blinks > 25:
-        count += 1
-        blink_sections.append(25)
-        blinks = blinks - 25
-    blink_sections.append(blinks)
-    stone_lengths = []
-    stone_sections = [stones]
-    for blinks_ in blink_sections:
-        tot_blinks = blinks_
-        for stones_ in stone_sections:
-            while blinks_:
-                blinks_ = blinks_ - 1
-                stones_ = blink(stones_)
-            blinks_ = tot_blinks
-            stone_lengths.append(len(stones_))
-            stone_sections.pop(0)
-            if len(stones_) != 1:
-                for i in range(int(math.ceil(len(stones_) / 5))):
-                    try:
-                        stone_sections.append(stones_[i * 5 : (i + 1) * 5])
-                    except:
-                        stone_sections.append(stones_[i * 5 :])
-            print(sum(stone_lengths))
-        print("break")
-    return sum(stone_lengths)
+stone_lengths, stones_1 = num_of_stones(input, 25)
+print(stone_lengths)
+print(f"sections = {len(stones_1)}")
+updated_sections = []
+for num, stone in enumerate(stones_1):
+    if stone == "0":
+        length, stones_ = zero_answer
+    elif stone == "1":
+        length, stones_ = one_answer
+    else:
+        length, stones_ = num_of_stones(stone, 25)
+    stone_lengths += length
+    print(num, stone_lengths)
+    updated_sections.append(stones_)
+for stones in updated_sections:
+    print(f"sections = {len(stones)}")
+    for stone in stones:
+        if stone == "0":
+            length = zero_answer[0]
+        elif stone == "1":
+            length = one_answer[0]
+        else:
+            length = num_of_stones(stone, 25)[0]
+        stone_lengths += length
+        print(stone_lengths)
 
 
-answer2 = num_of_stones_long(input, 75)
+answer2 = stone_lengths
 print(answer2)
 
 # 15636990 too low
