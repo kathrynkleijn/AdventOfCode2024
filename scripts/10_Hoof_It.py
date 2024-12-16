@@ -227,15 +227,11 @@ class HikingMap:
         num_trails = 0
         trailheads = OrderedDict()
         trailheads[trailhead] = 0
-        checked = []
         tops = []
+        duplicated = {trailhead: 1}
         while trailheads:
             trailhead = list(trailheads.keys())[0]
             height = trailheads[trailhead]
-            if trailhead in checked:
-                trailheads.pop(trailhead, None)
-                rating += 1
-                continue
             top = self.check_top(trailhead)
             if top:
                 trail = True
@@ -244,22 +240,25 @@ class HikingMap:
                 trail, alternatives, current_row, current_col, height = self.trail(
                     trailhead, height, debug
                 )
+                if trailhead in duplicated:
+                    multiplier = duplicated[trailhead]
                 for alternative, height in alternatives.items():
+                    if alternative in trailheads:
+                        duplicated[alternative] += 1 * multiplier
+                    else:
+                        duplicated[alternative] = 1 * multiplier
                     trailheads[alternative] = height
             if trail:
                 if (current_row, current_col) not in tops:
                     tops.append((current_row, current_col))
                     num_trails += 1
-                rating += 1
+                rating += duplicated[trailhead]
             # if num_trails == len(self.ends):
             #     break
             try:
                 trailheads.pop(trailhead)
             except:
                 break
-
-            checked.append(trailhead)
-            checked = list(set(checked))
         return num_trails, rating
 
     def check_top(self, trailhead):
@@ -322,15 +321,13 @@ if __name__ == "__main__":
     test_map6 = HikingMap(test_data6)
     assert test_map6.count_all_trails()[1] == 3
 
-    """ these all wrong """
+    test_map7 = HikingMap(test_data7)
+    assert test_map7.count_all_trails()[1] == 13
 
-    # # test_map7 = HikingMap(test_data7)
-    # # print(test_map7.count_all_trails())
-    # # assert test_map7.count_all_trails()[1] == 13
+    test_map8 = HikingMap(test_data8)
+    assert test_map8.count_all_trails()[1] == 227
 
-    # test_map8 = HikingMap(test_data8)
-    # print(test_map8.count_all_trails())
-    # assert test_map8.count_all_trails()[1] == 227
+    assert test_map2.count_all_trails()[1] == 81
 
-    # print(test_map2.count_all_trails())
-    # assert test_map2.count_all_trails()[1] == 81
+    answer2 = answer_map.count_all_trails()[1]
+    print(answer2)
