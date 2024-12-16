@@ -1,5 +1,7 @@
 # Day 11 - Plutonian Pebbles
 
+import math
+
 test_data = "125 17".split(" ")
 test_data2 = "0 1 10 99 999".split(" ")
 
@@ -37,5 +39,34 @@ with open("../input_data/11_Plutonian_Pebbles.txt", "r", encoding="utf-8") as fi
 answer1 = num_of_stones(input, 25)
 print(answer1)
 
-answer2 = num_of_stones(input, 75)
+
+# Part 2
+
+
+def num_of_stones_long(stones, blinks):
+    blink_sections = []
+    count = 0
+    while blinks > 25:
+        count += 1
+        blink_sections.append(25)
+        blinks = blinks - 25
+    blink_sections.append(blinks)
+    stone_lengths = []
+    stone_sections = [stones]
+    for blinks_ in blink_sections:
+        for stones_ in stone_sections:
+            while blinks_:
+                blinks_ = blinks_ - 1
+                stones_ = blink(stones_)
+            stone_lengths.append(len(stones_))
+            stone_sections = [
+                stones_[: int(math.floor(len(stones) / 2))],
+                stones_[int(math.floor(len(stones) / 2)) :],
+            ]
+    return sum(stone_lengths)
+
+
+answer2 = num_of_stones_long(input, 75)
 print(answer2)
+
+# 807190 too low
