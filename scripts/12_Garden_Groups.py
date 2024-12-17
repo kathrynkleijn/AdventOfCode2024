@@ -1,6 +1,7 @@
 # Day 12 - Garden Groups
 
 import re
+from random import choice
 
 test_data = """AAAA
 BBCD
@@ -60,26 +61,34 @@ class Garden:
         return list(set(filtered))
 
     def find_region(self, plant_type):
-        perimeter = 0
-        area = 0
-        region = True
+        plant_region = []
         for i, row in enumerate(self.rows):
             for j, plant in enumerate(row):
                 if plant == plant_type:
-                    # print((i, j))
-                    area += 1
-                    perim = self.perimeter_of_plant((i, j), plant_type)
-                    # print(perim)
-                    perimeter += perim
-                    if perim == 4:
-                        # print(True)
-                        region = False
-                        self.rows[i][j] = "."
-                        break
-            if not region:
-                break
+                    plant_region.append((i, j))
 
-        return area, perimeter, region
+        return plant_region
+
+    def test_if_connected(plant_region):
+        def neighbours(plant):
+            x, y = plant
+            candidates = [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
+            return [c for c in candidates if c in plant_region]
+
+        seen = set()
+
+        frontier = [choice(list(plant_region))]
+
+        while not len(frontier) == 0:
+            point = frontier.pop()
+            seen.add(point)
+            frontier.extend([n for n in neighbours(point) if not n in seen])
+
+        if len(seen) == len(plant_region):
+            return plant_region, None
+        else:
+            region = [plant for plant in plant_region if not plant in seen]
+            return seen, region
 
     def perimeter_of_plant(self, plant_position, plant_type):
         perimeter = 0
@@ -107,29 +116,29 @@ class Garden:
 
         return perimeter
 
-    # def perimeter_of_region(self, plant_region):
-    #     plant_positions = []
-    #     for i, row in enumerate(plant_region):
-    #         for j, plant in enumerate(row):
-    #             if plant != ".":
-    #                 plant_positions.append((i, j))
-    #     perimeter = 0
-    #     for position in plant_positions:
-    #         perimeter += self.perimeter_of_plant(plant_region, position)
+    def perimeter_of_region(self, plant_region):
+        plant_positions = []
+        for i, row in enumerate(plant_region):
+            for j, plant in enumerate(row):
+                if plant != ".":
+                    plant_positions.append((i, j))
+        perimeter = 0
+        for position in plant_positions:
+            perimeter += self.perimeter_of_plant(plant_region, position)
 
-    #     return perimeter
+        return perimeter
 
-    # def area_of_region(self, plant_region):
-    #     area = 0
-    #     for row in plant_region:
-    #         for plant in row:
-    #             if plant != ".":
-    #                 area += 1
-    #     return area
+    def area_of_region(self, plant_region):
+        area = 0
+        for row in plant_region:
+            for plant in row:
+                if plant != ".":
+                    area += 1
+        return area
 
-    def price_of_region(self, area, perimeter):
-        # area = self.area_of_region(plant_region)
-        # perimeter = self.perimeter_of_region(plant_region)
+    def price_of_region(self, plant_region):
+        area = self.area_of_region(plant_region)
+        perimeter = self.perimeter_of_region(plant_region)
         return area * perimeter
 
     def price_of_garden(self):
@@ -160,3 +169,6 @@ if __name__ == "__main__":
     test_garden3 = Garden(test_data3)
 
     # assert test_garden3.price_of_garden() == test_answer3
+
+
+from random import choice
