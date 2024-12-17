@@ -34,6 +34,7 @@ def num_of_stones(stones, blinks):
 
 assert num_of_stones(test_data, 25)[0] == 55312
 
+
 with open("../input_data/11_Plutonian_Pebbles.txt", "r", encoding="utf-8") as file:
     input = file.read().strip().split(" ")
 
@@ -71,8 +72,7 @@ def blink_25(stones, blinks):
     stones = [(stone, 0) for stone in stones]
     while any(stone[1] < blinks for stone in stones):
         stones = blink_25_loop(stones, blinks)
-    # print(stones)
-    return len(stones)
+    return len(stones), stones
 
 
 def blink_25_loop(stones, blinks):
@@ -114,8 +114,13 @@ def blink_25_loop(stones, blinks):
     return updated_stones
 
 
-print(blink_25(test_data, 25))
+print(blink_25(test_data, 25)[0])
 # assert blink_25(test_data, 25) == 55312
+
+test1 = num_of_stones(test_data, 25)[1]
+test2 = [stone[0] for stone in blink_25(test_data, 25)[1]]
+difference = [(int(x) - int(y)) for x, y in zip(sorted(test1), sorted(test2))]
+print(difference)
 
 
 # def num_stones_75_blinks(starting_stones, init=False):
