@@ -67,50 +67,55 @@ print(answer1)
 # print(sorted([int(key) for key in tested.keys()]))
 
 
-def blink_25(stones):
+def blink_25(stones, blinks):
     stones = [(stone, 0) for stone in stones]
+    while any(stone[1] < blinks for stone in stones):
+        stones = blink_25_loop(stones, blinks)
+    # print(stones)
+    return len(stones)
+
+
+def blink_25_loop(stones, blinks):
     updated_stones = []
     for stone in stones:
-        if stone[1] == 25:
-            continue
+        # print(stone)
+        if stone[1] == blinks:
+            updated_stones.append(stone)
         elif stone[0] == "0":
             updated_stones.append(("1", (stone[1] + 1)))
         elif not len(stone[0]) % 2:
-            power = int(math.log(len(stone[0]), 2))
-            if stone[1] + power <= 25:
-                factor = int(len(stone) / (2**power))
+            multiple_of_2 = len(stone[0]) & (~(len(stone[0]) - 1))
+            power = int(math.log(multiple_of_2, 2))
+            # print(power)
+            if stone[1] + power <= blinks:
+                # print(True)
+                factor = int(len(stone[0]) / (2**power))
+                # print(factor)
                 i = 0
-                while i + factor <= len(stone):
-                    new_stone = stone[i : i + factor]
-                    updated_stones.append((new_stone, power))
-                    i += 1
+                while i + factor <= len(stone[0]):
+                    new_stone = int(stone[0][i : i + factor])
+                    updated_stones.append((str(new_stone), stone[1] + power))
+                    i += factor
             else:
-                power = 25 - stone[1]
-                factor = int(len(stone) / (2**power))
+                # print(False)
+                power = blinks - stone[1]
+                # print(power)
+                factor = int(len(stone[0]) / (2**power))
+                # print(factor)
                 i = 0
-                while i + factor <= len(stone):
-                    new_stone = stone[i : i + factor]
-                    updated_stones.append((new_stone, power))
-                    i += 1
+                while i + factor <= len(stone[0]):
+                    new_stone = int(stone[0][i : i + factor])
+                    updated_stones.append((str(new_stone), stone[1] + power))
+                    i += factor
 
         else:
             updated_stones.append((str(int(stone[0]) * 2024), stone[1] + 1))
+        # print(updated_stones)
     return updated_stones
 
 
-updated_stones = []
-stone = "12345678"
-print(len(stone))
-power = int(math.log(len(stone), 2))
-factor = int(len(stone) / (2**power))
-i = 0
-while i + factor <= len(stone):
-    print(f"i={i}")
-    new_stone = stone[i : i + factor]
-    print(new_stone)
-    updated_stones.append(new_stone)
-    i += 1
-print(updated_stones)
+print(blink_25(test_data, 25))
+# assert blink_25(test_data, 25) == 55312
 
 
 # def num_stones_75_blinks(starting_stones, init=False):
