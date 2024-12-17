@@ -1,7 +1,5 @@
 # Day 11 - Plutonian Pebbles
 
-import math
-from collections import Counter, defaultdict
 import functools
 
 test_data = "125 17".split(" ")
@@ -47,14 +45,20 @@ print(answer1)
 
 @functools.lru_cache(maxsize=None)
 def blink_single(stone):
-    if stone == "0":
-        return ("1", 0)
-    elif not len(stone) % 2:
-        first_stone = str(int(stone[: int((len(stone) / 2))]))
-        second_stone = str(int(stone[int(len(stone) / 2) :]))
-        return (first_stone, second_stone)
+
+    text = str(stone)
+
+    if stone == 0:
+        return (1, None)
+
+    elif not len(text) % 2:
+
+        first_stone = str(int(text[: int((len(text) / 2))]))
+        second_stone = str(int(text[int(len(text) / 2) :]))
+        return (int(first_stone), int(second_stone))
+
     else:
-        return (str(int(stone) * 2024), None)
+        return (stone * 2024, None)
 
 
 @functools.lru_cache(maxsize=None)
@@ -77,24 +81,18 @@ def count_stones(stone, blinks):
         return output
 
 
-def num_of_stones_long(stones, blinks):
-    stones_dict = defaultdict(int)
+def num_of_stones_long(stones, count):
+    stones = [int(stone) for stone in stones]
+
+    output = 0
+
     for stone in stones:
-        stones_dict[stone] = 1
-    while blinks:
-        blinks = blinks - 1
-        stones = blink(stones)
-        count = Counter(stones)
-        for stone, value in count.items():
-            stones_dict[stone] += value
-        stones = set(stones)
-    stones_length = 0
-    for stone, value in stones_dict.items():
-        # print(stone, len(blink([stone])), value)
-        stones_length += value * len(blink([stone]))
+        output += count_stones(stone, count)
 
-    return stones_length
+    return output
 
 
-print(num_of_stones_long(test_data, 25))
 assert num_of_stones_long(test_data, 25) == 55312
+
+answer2 = num_of_stones_long(input, 75)
+print(answer2)
