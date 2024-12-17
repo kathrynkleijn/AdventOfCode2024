@@ -78,7 +78,6 @@ def blink_25(stones, blinks):
 def blink_25_loop(stones, blinks):
     updated_stones = []
     for stone in stones:
-        # print(stone)
         if stone[1] == blinks:
             updated_stones.append(stone)
         elif stone[0] == "0":
@@ -86,22 +85,20 @@ def blink_25_loop(stones, blinks):
         elif not len(stone[0]) % 2:
             multiple_of_2 = len(stone[0]) & (~(len(stone[0]) - 1))
             power = int(math.log(multiple_of_2, 2))
-            # print(power)
             if stone[1] + power <= blinks:
-                # print(True)
                 factor = int(len(stone[0]) / (2**power))
-                # print(factor)
                 i = 0
                 while i + factor <= len(stone[0]):
                     new_stone = int(stone[0][i : i + factor])
+                    if new_stone == 0 and i % 2 == 0:
+                        i += factor
+                        new_stone = int(stone[0][i : i + factor])
+                        power = power - 1
                     updated_stones.append((str(new_stone), stone[1] + power))
                     i += factor
             else:
-                # print(False)
                 power = blinks - stone[1]
-                # print(power)
                 factor = int(len(stone[0]) / (2**power))
-                # print(factor)
                 i = 0
                 while i + factor <= len(stone[0]):
                     new_stone = int(stone[0][i : i + factor])
@@ -110,17 +107,12 @@ def blink_25_loop(stones, blinks):
 
         else:
             updated_stones.append((str(int(stone[0]) * 2024), stone[1] + 1))
-        # print(updated_stones)
     return updated_stones
 
 
-print(blink_25(test_data, 25)[0])
-# assert blink_25(test_data, 25) == 55312
-
-test1 = num_of_stones(test_data, 25)[1]
-test2 = [stone[0] for stone in blink_25(test_data, 25)[1]]
-difference = [(int(x) - int(y)) for x, y in zip(sorted(test1), sorted(test2))]
-print(difference)
+assert blink_25(test_data, 25)[0] == 55312
+answer1 = blink_25(input, 25)[0]
+print(answer1)
 
 
 # def num_stones_75_blinks(starting_stones, init=False):
