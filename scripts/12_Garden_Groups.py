@@ -70,7 +70,8 @@ class Garden:
         return plant_region
 
     # make this recursive
-    def test_if_connected(self, plant_region):
+    def test_if_connected(self, plant_region, regions=[]):
+
         def neighbours(plant):
             x, y = plant
             candidates = [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
@@ -85,11 +86,12 @@ class Garden:
             seen.add(point)
             frontier.extend([n for n in neighbours(point) if not n in seen])
 
-        if len(seen) == len(plant_region):
-            return plant_region
-        else:
+        regions.append(list(seen))
+        if len(seen) != len(plant_region):
             region = [plant for plant in plant_region if not plant in seen]
-            return list(seen), region
+            regions = self.test_if_connected(region, regions)
+
+        return regions
 
     def perimeter_of_plant(self, plant_position, plant_type):
         perimeter = 0
@@ -130,18 +132,15 @@ class Garden:
     def price_of_region(self, plant_region, plant_type):
         area = self.area_of_region(plant_region)
         perimeter = self.perimeter_of_region(plant_region, plant_type)
-        print(plant_type, area, perimeter)
         return area * perimeter
 
     def price_of_garden(self):
         price = 0
         for plant in self.plants:
+            regions = []
             plant_region = self.find_region(plant)
-            regions = list(self.test_if_connected(plant_region))
-            if type(regions[0]) == tuple:
-                regions = [regions]
-            for region in regions:
-                print(region, plant)
+            all_regions = self.test_if_connected(plant_region, regions)
+            for region in all_regions:
                 price += self.price_of_region(region, plant)
 
         return price
@@ -153,15 +152,21 @@ if __name__ == "__main__":
 
     plant_region = test_garden.find_region("A")
 
-    # assert test_garden.price_of_region(plant_region, "A") == 40
+    assert test_garden.price_of_region(plant_region, "A") == 40
 
-    # assert test_garden.price_of_garden() == test_answer
+    assert test_garden.price_of_garden() == test_answer
 
     test_garden2 = Garden(test_data2)
 
-    print(test_garden2.price_of_garden())
-    # assert test_garden2.price_of_garden() == test_answer2
+    assert test_garden2.price_of_garden() == test_answer2
 
-    # test_garden3 = Garden(test_data3)
+    test_garden3 = Garden(test_data3)
 
-    # assert test_garden3.price_of_garden() == test_answer3
+    assert test_garden3.price_of_garden() == test_answer3
+
+    with open("../input_data/12_Garden_Groups.txt", "r", encoding="utf-8") as file:
+        input = file.read().strip()
+
+    answer_garden = Garden(input)
+    answer1 = answer_garden.price_of_garden()
+    print(answer1)
