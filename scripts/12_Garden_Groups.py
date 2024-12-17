@@ -7,6 +7,29 @@ BBCD
 BBCC
 EEEC"""
 
+test_answer = 140
+
+test_data2 = """OOOOO
+OXOXO
+OOOOO
+OXOXO
+OOOOO"""
+
+test_answer2 = 772
+
+test_data3 = """RRRRIICCFF
+RRRRIICCCF
+VVRRRCCFFF
+VVRCCCJFFF
+VVVVCJJCFE
+VVIVCCJJEE
+VVIIICJJEE
+MIIIIIJJEE
+MIIISIJEEE
+MMMISSJEEE"""
+
+test_answer3 = 1930
+
 
 class Garden:
 
@@ -39,12 +62,24 @@ class Garden:
     def find_region(self, plant_type):
         perimeter = 0
         area = 0
+        region = True
         for i, row in enumerate(self.rows):
             for j, plant in enumerate(row):
                 if plant == plant_type:
+                    # print((i, j))
                     area += 1
-                    perimeter += self.perimeter_of_plant((i, j), plant_type)
-        return area, perimeter
+                    perim = self.perimeter_of_plant((i, j), plant_type)
+                    # print(perim)
+                    perimeter += perim
+                    if perim == 4:
+                        # print(True)
+                        region = False
+                        self.rows[i][j] = "."
+                        break
+            if not region:
+                break
+
+        return area, perimeter, region
 
     def perimeter_of_plant(self, plant_position, plant_type):
         perimeter = 0
@@ -97,9 +132,31 @@ class Garden:
         # perimeter = self.perimeter_of_region(plant_region)
         return area * perimeter
 
+    def price_of_garden(self):
+        price = 0
+        for plant in self.plants:
+            region = False
+            while not region:
+                area, perimeter, region = self.find_region(plant)
+                # print(plant, area, perimeter)
+                price += self.price_of_region(area, perimeter)
+
+        return price
+
 
 if __name__ == "__main__":
 
     test_garden = Garden(test_data)
-    area, perimeter = test_garden.find_region("A")
+
+    area, perimeter, region = test_garden.find_region("A")
+
     assert test_garden.price_of_region(area, perimeter) == 40
+    assert test_garden.price_of_garden() == test_answer
+
+    test_garden2 = Garden(test_data2)
+
+    assert test_garden2.price_of_garden() == test_answer2
+
+    test_garden3 = Garden(test_data3)
+
+    # assert test_garden3.price_of_garden() == test_answer3
