@@ -126,8 +126,15 @@ assert blink_25(test_data, 25)[0] == 55312
 print(input)
 test1 = num_of_stones(["413"], 15)[1]
 test2 = [stone[0] for stone in blink_25(["413"], 15)[1]]
-difference = [(int(x) - int(y)) for x, y in zip(sorted(test1), sorted(test2))]
+difference = [(int(x) - int(y)) for x, y in zip(test1, test2)]
+for index, zip in enumerate(zip(test1, test2)):
+    x, y = zip
+    if int(x) - int(y) != 0:
+        print(index, x, y)
 print(sum(difference))
+
+print(test1)
+print(test2)
 
 
 # def num_stones_75_blinks(starting_stones, init=False):
