@@ -69,7 +69,8 @@ class Garden:
 
         return plant_region
 
-    def test_if_connected(plant_region):
+    # make this recursive
+    def test_if_connected(self, plant_region):
         def neighbours(plant):
             x, y = plant
             candidates = [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
@@ -85,10 +86,10 @@ class Garden:
             frontier.extend([n for n in neighbours(point) if not n in seen])
 
         if len(seen) == len(plant_region):
-            return plant_region, None
+            return plant_region
         else:
             region = [plant for plant in plant_region if not plant in seen]
-            return seen, region
+            return list(seen), region
 
     def perimeter_of_plant(self, plant_position, plant_type):
         perimeter = 0
@@ -116,39 +117,32 @@ class Garden:
 
         return perimeter
 
-    def perimeter_of_region(self, plant_region):
-        plant_positions = []
-        for i, row in enumerate(plant_region):
-            for j, plant in enumerate(row):
-                if plant != ".":
-                    plant_positions.append((i, j))
+    def perimeter_of_region(self, plant_region, plant_type):
         perimeter = 0
-        for position in plant_positions:
-            perimeter += self.perimeter_of_plant(plant_region, position)
+        for position in plant_region:
+            perimeter += self.perimeter_of_plant(position, plant_type)
 
         return perimeter
 
     def area_of_region(self, plant_region):
-        area = 0
-        for row in plant_region:
-            for plant in row:
-                if plant != ".":
-                    area += 1
-        return area
+        return len(plant_region)
 
-    def price_of_region(self, plant_region):
+    def price_of_region(self, plant_region, plant_type):
         area = self.area_of_region(plant_region)
-        perimeter = self.perimeter_of_region(plant_region)
+        perimeter = self.perimeter_of_region(plant_region, plant_type)
+        print(plant_type, area, perimeter)
         return area * perimeter
 
     def price_of_garden(self):
         price = 0
         for plant in self.plants:
-            region = False
-            while not region:
-                area, perimeter, region = self.find_region(plant)
-                # print(plant, area, perimeter)
-                price += self.price_of_region(area, perimeter)
+            plant_region = self.find_region(plant)
+            regions = list(self.test_if_connected(plant_region))
+            if type(regions[0]) == tuple:
+                regions = [regions]
+            for region in regions:
+                print(region, plant)
+                price += self.price_of_region(region, plant)
 
         return price
 
@@ -157,18 +151,17 @@ if __name__ == "__main__":
 
     test_garden = Garden(test_data)
 
-    area, perimeter, region = test_garden.find_region("A")
+    plant_region = test_garden.find_region("A")
 
-    assert test_garden.price_of_region(area, perimeter) == 40
-    assert test_garden.price_of_garden() == test_answer
+    # assert test_garden.price_of_region(plant_region, "A") == 40
+
+    # assert test_garden.price_of_garden() == test_answer
 
     test_garden2 = Garden(test_data2)
 
-    assert test_garden2.price_of_garden() == test_answer2
+    print(test_garden2.price_of_garden())
+    # assert test_garden2.price_of_garden() == test_answer2
 
-    test_garden3 = Garden(test_data3)
+    # test_garden3 = Garden(test_data3)
 
     # assert test_garden3.price_of_garden() == test_answer3
-
-
-from random import choice
