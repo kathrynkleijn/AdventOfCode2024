@@ -70,6 +70,7 @@ print(answer1)
 
 def blink_25(stones, blinks):
     stones = [(stone, 0) for stone in stones]
+    print(stones)
     while any(stone[1] < blinks for stone in stones):
         stones = blink_25_loop(stones, blinks)
     return len(stones), stones
@@ -78,6 +79,7 @@ def blink_25(stones, blinks):
 def blink_25_loop(stones, blinks):
     updated_stones = []
     for stone in stones:
+        # print(stone)
         if stone[1] == blinks:
             updated_stones.append(stone)
         elif stone[0] == "0":
@@ -85,8 +87,12 @@ def blink_25_loop(stones, blinks):
         elif not len(stone[0]) % 2:
             multiple_of_2 = len(stone[0]) & (~(len(stone[0]) - 1))
             power = int(math.log(multiple_of_2, 2))
+            # print(power)
+            # print(stone[1] + power)
             if stone[1] + power <= blinks:
+                # print(True)
                 factor = int(len(stone[0]) / (2**power))
+                # print(factor)
                 i = 0
                 while i + factor <= len(stone[0]):
                     new_stone = int(stone[0][i : i + factor])
@@ -97,8 +103,11 @@ def blink_25_loop(stones, blinks):
                     updated_stones.append((str(new_stone), stone[1] + power))
                     i += factor
             else:
+                # print(False)
                 power = blinks - stone[1]
+                # print(power)
                 factor = int(len(stone[0]) / (2**power))
+                # print(factor)
                 i = 0
                 while i + factor <= len(stone[0]):
                     new_stone = int(stone[0][i : i + factor])
@@ -107,12 +116,18 @@ def blink_25_loop(stones, blinks):
 
         else:
             updated_stones.append((str(int(stone[0]) * 2024), stone[1] + 1))
+        # print(updated_stones)
     return updated_stones
 
 
 assert blink_25(test_data, 25)[0] == 55312
-answer1 = blink_25(input, 25)[0]
-print(answer1)
+
+# correct up to 11 for input, 4189/61/0/8 ok, 413 ok up to 15
+print(input)
+test1 = num_of_stones(["413"], 15)[1]
+test2 = [stone[0] for stone in blink_25(["413"], 15)[1]]
+difference = [(int(x) - int(y)) for x, y in zip(sorted(test1), sorted(test2))]
+print(sum(difference))
 
 
 # def num_stones_75_blinks(starting_stones, init=False):
